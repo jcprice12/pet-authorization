@@ -1,3 +1,4 @@
 .eslintrc.js
 jest.config.js
+jest.config.e2e.js
 *.json
