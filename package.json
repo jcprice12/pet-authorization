@@ -16,7 +16,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
+    "lint": "eslint --ignore-path .eslintignore --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -26,8 +26,8 @@
   },
   "lint-staged": {
     "**/*.{ts,js,json}": [
-      "npm run lint",
-      "npm run format"
+      "eslint --ignore-path .eslintignore --fix",
+      "prettier --write"
     ]
   },
   "dependencies": {
