@@ -25,9 +25,8 @@
     "prepare": "husky install"
   },
   "lint-staged": {
-    "**/*": [
-      "npm run lint",
-      "npm run format"
+    "{src,test}/**/*.ts": [
+      "npm run lint"
     ]
   },
   "dependencies": {
