@@ -1,20 +1,22 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, ParseArrayPipe, Query } from '@nestjs/common';
+import { RequiredPipe } from '../common/required.pipe';
 import { ValidEnumPipe } from '../common/valid-enum.pipe';
-import { AuthorizeService } from './authorize.service';
 import { ResponseType } from './response-type.enum';
 
 @Controller('/authorize')
 export class AuthorizeController {
-  constructor(private readonly authorizeService: AuthorizeService) {}
-
   @Get()
   authorize(
-    @Query('response_type', new ValidEnumPipe(ResponseType))
-    responseType: ResponseType,
-    @Query('client_id') clientId: string,
-    @Query('redirect_url') redirectUrl: string,
-    @Query('scope') scope: string
-  ): Promise<string> {
-    return this.authorizeService.authorize();
+    @Query('response_type', new ValidEnumPipe(ResponseType)) responseType: ResponseType,
+    @Query('client_id', RequiredPipe) clientId: string,
+    @Query('redirect_uri', RequiredPipe) redirectUri: string,
+    @Query('scope', new ParseArrayPipe({ separator: ' ' })) scope: Array<string>
+  ): any {
+    return {
+      responseType,
+      clientId,
+      redirectUri,
+      scope
+    };
   }
 }
