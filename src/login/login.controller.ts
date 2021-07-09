@@ -15,6 +15,6 @@ export class LoginController {
   @UseGuards(LocalAuthGuard)
   @Post()
   login(@Res() res: Response) {
-    res.send(201);
+    res.sendStatus(201);
   }
 }
