@@ -10,8 +10,8 @@
   </head>
   <body>
     <form>
-      <label for='username'>username</label><br />
-      <input type='text' id='username' name='username' /><br />
+      <label for='email'>email</label><br />
+      <input type='text' id='email' name='email' /><br />
       <label for='password'>password</label><br />
       <input type='password' id='password' name='password' /><br />
       <input type='hidden' id='afterLoginGoTo' value='{{afterLoginGoTo}}'/></br>
@@ -21,10 +21,10 @@
       function login(){ 
         var afterLoginGoTo = document.getElementById('afterLoginGoTo').value;
         var requestObj = {
-          username: document.getElementById('username').value,
+          email: document.getElementById('email').value,
           password: document.getElementById('password').value
         }
-        $.post('/login', requestObj).done(function(){
+        $.post('/user/login', requestObj).done(function(){
           window.location.replace(afterLoginGoTo);
         }).fail(function(e) {
           alert('login failed');
