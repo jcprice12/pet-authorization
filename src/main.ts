@@ -6,9 +6,6 @@ import * as expressSession from 'express-session';
 import * as cookieParser from 'cookie-parser';
 import * as passport from 'passport';
 
-const PORT = process.env.PORT || 3000;
-const SESH_SECRET = process.env.SESHCRET || 'local secret';
-
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
@@ -16,7 +13,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(
     expressSession({
-      secret: SESH_SECRET,
+      secret: 'local secret change me',
       resave: false,
       saveUninitialized: false,
       cookie: {
@@ -26,6 +23,6 @@ async function bootstrap() {
   );
   app.use(passport.initialize());
   app.use(passport.session());
-  await app.listen(PORT);
+  await app.listen(3000);
 }
 bootstrap();
