@@ -30,7 +30,7 @@ export class UserController {
 
   @Post('/register')
   async registerUser(@Body() user: UserRegistrationDto, @Res() res: Response) {
-    await this.userService.register(user);
+    await this.userService.insertOne(user);
     res.sendStatus(201);
   }
 }

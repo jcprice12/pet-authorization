@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PassportSerializer } from '@nestjs/passport';
-import { PublicUser, UserEntity } from '../user/user.model';
+import { PublicUser, User } from '../user/user.model';
 import { UserService } from '../user/user.service';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class SessionSerializer extends PassportSerializer {
   deserializeUser(userId: string, done: (err: Error, user: PublicUser) => void) {
     this.usersService
       .findOneById(userId)
-      .then((user: UserEntity) => {
+      .then((user: User) => {
         const { password, ...publicUser } = user;
         done(null, publicUser);
       })
