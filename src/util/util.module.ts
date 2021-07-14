@@ -1,6 +1,6 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { Module } from '@nestjs/common';
 import { dynamoClientFactory } from './dynamo-client.factory';
+import { HashService } from './hash.service';
 import { RequiredPipe } from './required.pipe';
 
 const dynamoDBClientProvider = {
@@ -9,7 +9,7 @@ const dynamoDBClientProvider = {
 };
 
 @Module({
-  providers: [RequiredPipe, dynamoDBClientProvider],
-  exports: [RequiredPipe, dynamoDBClientProvider]
+  providers: [RequiredPipe, dynamoDBClientProvider, HashService],
+  exports: [RequiredPipe, dynamoDBClientProvider, HashService]
 })
 export class UtilModule {}

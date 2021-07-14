@@ -8,6 +8,7 @@ import {
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Inject, Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
+import { HashService } from '../util/hash.service';
 import { UserNotFoundError } from './user-not-found.error';
 import { DbUser, User, UserRegistrationDto } from './user.model';
 
@@ -15,7 +16,10 @@ import { DbUser, User, UserRegistrationDto } from './user.model';
 export class UserService {
   private readonly tableName = 'PetAuth';
 
-  constructor(@Inject('DynamoClient') private readonly client: DynamoDBClient) {}
+  constructor(
+    @Inject('DynamoClient') private readonly client: DynamoDBClient,
+    private readonly hashService: HashService
+  ) {}
 
   async findOneByEmail(email: string): Promise<User> {
     const output = await this.client.send(
@@ -36,7 +40,7 @@ export class UserService {
       new GetItemCommand({
         TableName: this.tableName,
         Key: marshall({
-          pk: id
+          pk: `user#${id}`
         })
       })
     );
@@ -46,7 +50,8 @@ export class UserService {
   async insertOne(user: UserRegistrationDto): Promise<void> {
     const dbUser = {
       ...user,
-      pk: uuidv4()
+      password: await this.hashService.hashWithSalt(user.password),
+      pk: `user#${uuidv4()}`
     };
     await this.client.send(
       new TransactWriteItemsCommand({
@@ -63,7 +68,7 @@ export class UserService {
               TableName: this.tableName,
               ConditionExpression: 'attribute_not_exists(pk)',
               Item: marshall({
-                pk: dbUser.email
+                pk: `user-email#${dbUser.email}`
               })
             }
           }
@@ -83,7 +88,7 @@ export class UserService {
     const { pk, ...everythingElse } = dbUser;
     return {
       ...everythingElse,
-      id: pk
+      id: pk.split('#')[1]
     };
   }
 }
