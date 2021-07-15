@@ -6,7 +6,7 @@ import {
   TransactWriteItemsCommand
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { HashService } from '../util/hash.service';
 import { UserNotFoundError } from './user-not-found.error';
@@ -16,10 +16,7 @@ import { DbUser, User, UserRegistrationDto } from './user.model';
 export class UserService {
   private readonly tableName = 'PetAuth';
 
-  constructor(
-    @Inject('DynamoClient') private readonly client: DynamoDBClient,
-    private readonly hashService: HashService
-  ) {}
+  constructor(private readonly client: DynamoDBClient, private readonly hashService: HashService) {}
 
   async findOneByEmail(email: string): Promise<User> {
     const output = await this.client.send(

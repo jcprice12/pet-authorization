@@ -12,7 +12,8 @@ export class UserController {
   @Render('loginUser')
   getUserLoginPage() {
     return {
-      afterLoginGoTo: '/authorize?response_type=code&client_id=1234&redirect_uri=https://youtube.com&scope=profile'
+      afterLoginGoTo:
+        '/authorize?response_type=code&client_id=1234&redirect_uri=https://youtube.com&scope=profile'
     };
   }
 

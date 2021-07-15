@@ -9,7 +9,8 @@ export class AuthorizeController {
   @UseGuards(AuthenticatedGuard)
   @Get()
   authorize(
-    @Query('response_type', new ValidEnumPipe(ResponseType)) responseType: ResponseType,
+    @Query('response_type', new ValidEnumPipe(ResponseType))
+    responseType: ResponseType,
     @Query('client_id', RequiredPipe) clientId: string,
     @Query('redirect_uri', RequiredPipe) redirectUri: string,
     @Query('scope', new ParseArrayPipe({ separator: ' ' })) scope: Array<string>
