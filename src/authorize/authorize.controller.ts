@@ -12,8 +12,8 @@ export class AuthorizeController {
     @Query('response_type', new ValidEnumPipe(ResponseType))
     responseType: ResponseType,
     @Query('client_id', RequiredPipe) clientId: string,
-    @Query('redirect_uri', RequiredPipe) redirectUri: string,
-    @Query('scope', new ParseArrayPipe({ separator: ' ' })) scope: Array<string>
+    @Query('redirect_uri') redirectUri?: string,
+    @Query('scope', new ParseArrayPipe({ separator: ' ', optional: true })) scope?: Array<string>
   ): any {
     return {};
   }

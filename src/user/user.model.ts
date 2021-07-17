@@ -6,6 +6,7 @@ interface UserBase {
 }
 export interface DbUser extends UserBase {
   pk: string;
+  sk: string;
 }
 export interface User extends UserBase {
   id: string;

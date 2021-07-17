@@ -33,11 +33,13 @@ export class UserService {
   }
 
   async findOneById(id: string): Promise<User> {
+    const keyVal = `user#${id}`;
     const output = await this.client.send(
       new GetItemCommand({
         TableName: this.tableName,
         Key: marshall({
-          pk: `user#${id}`
+          pk: keyVal,
+          sk: keyVal
         })
       })
     );
@@ -45,11 +47,8 @@ export class UserService {
   }
 
   async insertOne(user: UserRegistrationDto): Promise<void> {
-    const dbUser = {
-      ...user,
-      password: await this.hashService.hashWithSalt(user.password),
-      pk: `user#${uuidv4()}`
-    };
+    const userKeyVal = `user#${uuidv4()}`;
+    const emailKeyVal = `user-email#${user.email}`;
     await this.client.send(
       new TransactWriteItemsCommand({
         TransactItems: [
@@ -57,7 +56,12 @@ export class UserService {
             Put: {
               TableName: this.tableName,
               ConditionExpression: 'attribute_not_exists(pk)',
-              Item: marshall(dbUser)
+              Item: marshall({
+                ...user,
+                password: await this.hashService.hashWithSalt(user.password),
+                pk: userKeyVal,
+                sk: userKeyVal
+              })
             }
           },
           {
@@ -65,7 +69,8 @@ export class UserService {
               TableName: this.tableName,
               ConditionExpression: 'attribute_not_exists(pk)',
               Item: marshall({
-                pk: `user-email#${dbUser.email}`
+                pk: emailKeyVal,
+                sk: emailKeyVal
               })
             }
           }
@@ -82,7 +87,7 @@ export class UserService {
   }
 
   private mapDbUserToNormalUser(dbUser: DbUser): User {
-    const { pk, ...everythingElse } = dbUser;
+    const { pk, sk, ...everythingElse } = dbUser;
     return {
       ...everythingElse,
       id: pk.split('#')[1]

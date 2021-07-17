@@ -18,12 +18,11 @@ export class DynamoSessionStore extends Store {
   }
 
   destroy(sid: string, cb: (error?: Error) => void) {
-    console.log('destroying', sid);
     this.dynamoClient
       .send(
         new DeleteItemCommand({
           TableName: this.tableName,
-          Key: marshall({ pk: `session#${sid}` })
+          Key: marshall(this.makeKeyBasedOnSid(sid))
         })
       )
       .then(() => cb())
@@ -31,12 +30,12 @@ export class DynamoSessionStore extends Store {
   }
 
   get(sid: string, cb: (error: Error | null, session?: SessionData) => void) {
-    console.log('getting', sid);
+    const keyVal = `session#${sid}`;
     this.dynamoClient
       .send(
         new GetItemCommand({
           TableName: this.tableName,
-          Key: marshall({ pk: `session#${sid}` })
+          Key: marshall(this.makeKeyBasedOnSid(sid))
         })
       )
       .then((output: GetItemOutput) => {
@@ -47,18 +46,25 @@ export class DynamoSessionStore extends Store {
   }
 
   set(sid: string, session: SessionData, cb: (error?: Error) => void) {
-    console.log('setting', sid, session);
     this.dynamoClient
       .send(
         new PutItemCommand({
           TableName: this.tableName,
           Item: marshall(
-            { pk: `session#${sid}`, sessionData: session },
+            { ...this.makeKeyBasedOnSid(sid), sessionData: session },
             { convertClassInstanceToMap: true, removeUndefinedValues: true }
           )
         })
       )
       .then(() => cb())
       .catch((e) => cb(e));
+  }
+
+  private makeKeyBasedOnSid(sid: string) {
+    const keyValue = `session#${sid}`;
+    return {
+      pk: keyValue,
+      sk: keyValue
+    };
   }
 }
