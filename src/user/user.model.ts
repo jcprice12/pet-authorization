@@ -12,7 +12,7 @@ export interface User extends PublicUser {
 export interface UserRegistrationDto extends UserBase {
   password: string;
 }
-export interface ConsentedScopesForUserDto {
+export interface ClientInfoForUser {
   userId: string;
   clientId: string;
   scopes: Array<string>;

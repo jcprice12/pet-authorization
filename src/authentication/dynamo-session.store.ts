@@ -29,7 +29,6 @@ export class DynamoSessionStore extends Store {
   }
 
   get(sid: string, cb: (error: Error | null, session?: SessionData) => void) {
-    const keyVal = `session#${sid}`;
     this.dynamoClient
       .send(
         new GetItemCommand({
@@ -38,7 +37,6 @@ export class DynamoSessionStore extends Store {
         })
       )
       .then((output: GetItemOutput) => {
-        console.log('got', output);
         cb(null, unmarshall(output.Item).sessionData);
       })
       .catch((e) => cb(e));

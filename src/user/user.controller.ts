@@ -1,20 +1,19 @@
-import { Body, Controller, Get, Post, Render, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Render, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthenticatedGuard } from '../authentication/authenticated.guard';
 import { LocalAuthGuard } from '../authentication/local-auth.guard';
-import { ConsentedScopesForUserDto, UserRegistrationDto } from './user.model';
-import { UserService } from './user.service';
+import { UserDao } from './user.dao';
+import { ClientInfoForUser, UserRegistrationDto } from './user.model';
 
 @Controller('/user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userDao: UserDao) {}
 
   @Get('/login')
   @Render('login-user')
-  getUserLoginPage() {
+  getUserLoginPage(@Query('redirect_uri') redirectUri?: string) {
     return {
-      afterLoginGoTo:
-        '/authorize?response_type=code&client_id=1234&redirect_uri=https://youtube.com&scope=profile'
+      afterLoginGoTo: redirectUri
     };
   }
 
@@ -32,26 +31,22 @@ export class UserController {
 
   @Post('/register')
   async registerUser(@Body() user: UserRegistrationDto, @Res() res: Response) {
-    await this.userService.insertOne(user);
+    await this.userDao.insertOne(user);
     res.sendStatus(201);
   }
 
   @UseGuards(AuthenticatedGuard)
   @Get('consent')
   @Render('user-consent')
-  getUserConsentPage() {
+  getUserConsentPage(@Query('redirect_uri') redirectUri?: string) {
     return {
-      afterConsentGoTo:
-        '/authorize?response_type=code&client_id=1234&redirect_uri=https://youtube.com&scope=profile'
+      afterConsentGoTo: redirectUri
     };
   }
 
   @UseGuards(AuthenticatedGuard)
   @Post('consent')
-  async provideConsent(
-    @Body() consentedScopesForUser: ConsentedScopesForUserDto,
-    @Res() res: Response
-  ) {
+  async provideConsent(@Body() consentedScopesForUser: ClientInfoForUser, @Res() res: Response) {
     res.send(201);
   }
 }
