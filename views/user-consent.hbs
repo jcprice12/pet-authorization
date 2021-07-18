@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Consent</title>
+    <script
+      src='https://code.jquery.com/jquery-3.6.0.min.js'
+      integrity='sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4='
+      crossorigin='anonymous'
+    ></script>
+  </head>
+  <body>
+    <form>
+      <input type='button' value='Consent' onclick='consent()'/>
+    </form>
+    <script>
+      function consent(){ 
+        var afterConsentGoTo = '{{afterConsentGoTo}}';
+        var requestObj = {
+          consentedScopes: []
+        }
+        $.post('/user/consent', requestObj).done(function(){
+          window.location.replace(afterConsentGoTo);
+        }).fail(function(e) {
+          alert('failed to provide consent');
+        });
+      }
+    </script>
+  </body>
+</html>

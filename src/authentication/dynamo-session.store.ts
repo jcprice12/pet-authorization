@@ -8,11 +8,10 @@ import {
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Injectable } from '@nestjs/common';
 import { SessionData, Store } from 'express-session';
+import { PetAuthTableName } from '../util/dynamo.config';
 
 @Injectable()
 export class DynamoSessionStore extends Store {
-  private readonly tableName = 'PetAuth';
-
   constructor(private readonly dynamoClient: DynamoDBClient) {
     super();
   }
@@ -21,7 +20,7 @@ export class DynamoSessionStore extends Store {
     this.dynamoClient
       .send(
         new DeleteItemCommand({
-          TableName: this.tableName,
+          TableName: PetAuthTableName,
           Key: marshall(this.makeKeyBasedOnSid(sid))
         })
       )
@@ -34,7 +33,7 @@ export class DynamoSessionStore extends Store {
     this.dynamoClient
       .send(
         new GetItemCommand({
-          TableName: this.tableName,
+          TableName: PetAuthTableName,
           Key: marshall(this.makeKeyBasedOnSid(sid))
         })
       )
@@ -49,7 +48,7 @@ export class DynamoSessionStore extends Store {
     this.dynamoClient
       .send(
         new PutItemCommand({
-          TableName: this.tableName,
+          TableName: PetAuthTableName,
           Item: marshall(
             { ...this.makeKeyBasedOnSid(sid), sessionData: session },
             { convertClassInstanceToMap: true, removeUndefinedValues: true }

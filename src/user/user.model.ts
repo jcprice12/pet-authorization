@@ -1,15 +1,19 @@
 interface UserBase {
   email: string;
-  password: string;
   givenName: string;
   familyName: string;
 }
-export interface DbUser extends UserBase {
-  pk: string;
-  sk: string;
-}
-export interface User extends UserBase {
+export interface PublicUser extends UserBase {
   id: string;
 }
-export type PublicUser = Omit<User, 'password'>;
-export type UserRegistrationDto = Omit<User, 'id'>;
+export interface User extends PublicUser {
+  password: string;
+}
+export interface UserRegistrationDto extends UserBase {
+  password: string;
+}
+export interface ConsentedScopesForUserDto {
+  userId: string;
+  clientId: string;
+  scopes: Array<string>;
+}
