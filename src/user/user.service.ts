@@ -11,7 +11,11 @@ export class UserService {
     return everythingElse;
   }
 
-  async hasConsentedToScopesForClient(userId: string, clientId: string, scopes: Array<string>) {
+  async getUsersMatchingConsentedScopesForClient(
+    userId: string,
+    clientId: string,
+    scopes: Array<string>
+  ) {
     const clientInfoForUser = await this.userDao.findClientInfoForUser(userId, clientId);
     return scopes.every((scope) => clientInfoForUser.scopes.includes(scope));
   }
