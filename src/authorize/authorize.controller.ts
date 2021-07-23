@@ -33,11 +33,11 @@ export class AuthorizeController {
     @Query('should_show_login_prompt', ParseOptionalBoolPipe) shouldShowLoginPrompt?: boolean,
     @Query('should_show_consent_prompt', ParseOptionalBoolPipe) shouldShowConsentPrompt?: boolean
   ): Promise<{ url: string }> {
-    let redirectObject: { url: string } = { url: '/user/login' };
+    let redirectObject: { url: string };
     if (req.isAuthenticated()) {
       const user = req.user as PublicUser;
       if (shouldShowConsentPrompt) {
-        this.goToConsentPage(req.url);
+        redirectObject = this.goToConsentPage(req.url);
       } else {
         redirectObject = this.goToRedirectUri(
           redirectUri,
