@@ -3,7 +3,8 @@ import {
   DynamoDBClient,
   GetItemCommand,
   QueryCommand,
-  TransactWriteItemsCommand
+  TransactWriteItemsCommand,
+  UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Injectable } from '@nestjs/common';
@@ -92,6 +93,23 @@ export class UserDao {
       })
     );
     return this.mapDbItemToClientInfo(output.Item);
+  }
+
+  async updateClientScopesForUser(clientInfoForUser: ClientInfoForUser): Promise<void> {
+    const { userId, clientId, scopes } = clientInfoForUser;
+    this.client.send(
+      new UpdateItemCommand({
+        TableName: PetAuthTableName,
+        Key: marshall({
+          pk: `user#${userId}`,
+          sk: `client#${clientId}`
+        }),
+        UpdateExpression: 'set scopes = :scopes',
+        ExpressionAttributeValues: marshall({
+          ':scopes': scopes
+        })
+      })
+    );
   }
 
   private mapDbItemToNormalUser(item: { [key: string]: AttributeValue } | undefined) {

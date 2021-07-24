@@ -1,17 +1,29 @@
-import { Body, Controller, Get, Post, Query, Render, Res, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
+import {
+  Body,
+  Controller,
+  Get,
+  ParseArrayPipe,
+  Post,
+  Query,
+  Render,
+  Req,
+  UseGuards
+} from '@nestjs/common';
+import { Request } from 'express';
 import { AuthenticatedGuard } from '../authentication/authenticated.guard';
 import { LocalAuthGuard } from '../authentication/local-auth.guard';
+import { RequiredPipe } from '../util/required.pipe';
 import { UserDao } from './user.dao';
-import { ClientInfoForUser, UserRegistrationDto } from './user.model';
+import { PublicUser, UserRegistrationDto } from './user.model';
+import { UserService } from './user.service';
 
 @Controller('/user')
 export class UserController {
-  constructor(private readonly userDao: UserDao) {}
+  constructor(private readonly userService: UserService, private readonly userDao: UserDao) {}
 
   @Get('/login')
   @Render('login-user')
-  getUserLoginPage(@Query('redirect_uri') redirectUri?: string) {
+  getUserLoginPage(@Query('redirect_uri', RequiredPipe) redirectUri: string) {
     return {
       afterLoginGoTo: redirectUri
     };
@@ -19,34 +31,39 @@ export class UserController {
 
   @UseGuards(LocalAuthGuard)
   @Post('/login')
-  loginUser(@Res() res: Response) {
-    res.sendStatus(201);
-  }
+  loginUser() {}
 
   @Get('/register')
   @Render('register-user')
-  getUserRegistrationPage() {
-    return {};
-  }
+  getUserRegistrationPage() {}
 
   @Post('/register')
-  async registerUser(@Body() user: UserRegistrationDto, @Res() res: Response) {
-    await this.userDao.insertOne(user);
-    res.sendStatus(201);
+  registerUser(@Body() user: UserRegistrationDto) {
+    return this.userService.registerUser(user);
   }
 
   @UseGuards(AuthenticatedGuard)
   @Get('consent')
   @Render('user-consent')
-  getUserConsentPage(@Query('redirect_uri') redirectUri?: string) {
+  getUserConsentPage(
+    @Query('redirect_uri', RequiredPipe) redirectUri: string,
+    @Query('scope', new ParseArrayPipe({ separator: ' ' })) scopes: Array<string>,
+    @Query('client_id', RequiredPipe) clientId: string
+  ) {
     return {
-      afterConsentGoTo: redirectUri
+      afterConsentGoTo: redirectUri,
+      scopes,
+      clientId
     };
   }
 
   @UseGuards(AuthenticatedGuard)
   @Post('consent')
-  async provideConsent(@Body() consentedScopesForUser: ClientInfoForUser, @Res() res: Response) {
-    res.send(201);
+  async provideConsent(
+    @Req() req: Request,
+    @Body() consentedScopesForUser: { scopes: Array<string>; clientId: string }
+  ) {
+    const user = req.user as PublicUser;
+    return this.userDao.updateClientScopesForUser({ ...consentedScopesForUser, userId: user.id });
   }
 }

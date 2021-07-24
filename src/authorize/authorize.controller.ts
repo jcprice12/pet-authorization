@@ -23,12 +23,10 @@ export class AuthorizeController {
   @Redirect()
   async authorize(
     @Req() req: Request,
-    @Query('response_type', new ValidEnumPipe(ResponseType))
-    _responseType: ResponseType,
+    @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
     @Query('client_id', RequiredPipe) clientId: string,
+    @Query('scope', new ParseArrayPipe({ separator: ' ' })) scope: Array<string>,
     @Query('redirect_uri') redirectUri?: string,
-    @Query('scope', new ParseArrayPipe({ separator: ' ', optional: true }))
-    scope?: Array<string>,
     @Query('state') _state?: string,
     @Query('should_show_login_prompt', ParseOptionalBoolPipe) shouldShowLoginPrompt?: boolean,
     @Query('should_show_consent_prompt', ParseOptionalBoolPipe) shouldShowConsentPrompt?: boolean
@@ -60,9 +58,11 @@ export class AuthorizeController {
 
   private goToConsentPage(uriToGoToAfterConsent: string) {
     const url = new URL(uriToGoToAfterConsent);
+    const clientId = url.searchParams.get('client_id');
+    const desiredScope = url.searchParams.get('scope');
     url.searchParams.set('should_show_consent_prompt', 'false');
     return {
-      url: `/user/consent?redirect_uri=${url.toString()}`
+      url: `/user/consent?scope=${desiredScope}&client_id=${clientId}&redirect_uri=${url.toString()}`
     };
   }
 
