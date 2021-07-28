@@ -7,17 +7,24 @@ import {
   UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { v4 as uuidv4 } from 'uuid';
+import { Logger } from 'winston';
 import { PetAuthTableName } from '../util/dynamo.config';
 import { HashService } from '../util/hash.service';
+import { Log } from '../util/log.decorator';
 import { ClientInfoForUserNotFoundError } from './client-info-for-user-not-found.error';
 import { UserNotFoundError } from './user-not-found.error';
 import { ClientInfoForUser, User, UserRegistrationDto } from './user.model';
 
 @Injectable()
 export class UserDao {
-  constructor(private readonly client: DynamoDBClient, private readonly hashService: HashService) {}
+  constructor(
+    private readonly client: DynamoDBClient,
+    private readonly hashService: HashService,
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
+  ) {}
 
   async findOneByEmail(email: string): Promise<User> {
     const output = await this.client.send(
@@ -82,6 +89,7 @@ export class UserDao {
     return this.mapDbItemToNormalUser(userItem);
   }
 
+  @Log((target: UserDao) => target.logger, { logPromise: true })
   async findClientInfoForUser(userId: string, clientId: string): Promise<ClientInfoForUser> {
     const output = await this.client.send(
       new GetItemCommand({
