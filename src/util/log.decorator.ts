@@ -1,15 +1,16 @@
 import { Logger } from 'winston';
 import { LogAttribute } from './log-attribute.model';
 
-export function Log(
-  getLogger: (that?: any) => Logger,
-  options: {
-    logPromise?: boolean;
-    argMappings?: Array<string | ((arg: any) => LogAttribute)>;
-  } = {
-    logPromise: false
-  }
-) {
+export type LogRetriever = (that?: any) => Logger;
+
+export type LogDecoratorOptions = {
+  logPromise?: boolean;
+  argMappings?: Array<string | ((arg: any) => LogAttribute)>;
+  resultMapping?: string | ((result: any) => LogAttribute);
+  successMessage?: string;
+};
+
+export function Log(getLogger: LogRetriever, options: LogDecoratorOptions = {}) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     descriptor.value = new Proxy(descriptor.value, {
       apply: function (original, thisArg: any, args: any[]) {
@@ -19,30 +20,29 @@ export function Log(
           method: propertyKey,
           ...mapArgsToMetadataObject(args, options.argMappings)
         };
-        function onSuccess(returnVal: any) {
+        function onSuccess(result: any) {
+          const resultLogAttribute = mapToLogAttribute(result, options.resultMapping ?? 'result');
           logger.info({
-            message: 'successful method invocation',
-            returnValue: returnVal,
+            message: options.successMessage || 'successful method invocation',
+            [resultLogAttribute.name]: resultLogAttribute.value,
             ...logAttributes
           });
-          return returnVal;
+          return result;
         }
         function onFailure(e: Error) {
-          logger.error({ message: e.stack ?? e.message, ...logAttributes });
+          logger.error({ message: e.stack || e.message, ...logAttributes });
           throw e;
         }
         async function awaitAction() {
           try {
-            const returnVal = await original.apply(thisArg, args);
-            return onSuccess(returnVal);
+            return onSuccess(await original.apply(thisArg, args));
           } catch (e) {
             onFailure(e);
           }
         }
         function doAction() {
           try {
-            const returnVal = original.apply(thisArg, args);
-            return onSuccess(returnVal);
+            return onSuccess(original.apply(thisArg, args));
           } catch (e) {
             onFailure(e);
           }
@@ -53,25 +53,22 @@ export function Log(
   };
 }
 
+export function LogPromise(
+  getLogger: LogRetriever,
+  options: Omit<LogDecoratorOptions, 'logPromise'> = {}
+) {
+  return Log(getLogger, { ...options, logPromise: true });
+}
+
+function mapToLogAttribute(value: any, mapping: string | ((val: any) => LogAttribute)) {
+  return typeof mapping === 'string' ? { name: mapping, value } : mapping(value);
+}
+
 function mapArgsToLogAttributes(
   args: Array<any>,
   argMappings: Array<string | ((arg: any) => LogAttribute)> = []
 ): Array<LogAttribute> {
-  return args.map((arg, index) => {
-    const mapping = argMappings[index];
-    let logAttribute: LogAttribute;
-    switch (typeof mapping) {
-      case 'string':
-        logAttribute = { name: mapping, value: arg?.toString() };
-        break;
-      case 'function':
-        logAttribute = mapping(arg);
-        break;
-      default:
-        logAttribute = { name: `arg${index + 1}`, value: arg?.toString() };
-    }
-    return logAttribute;
-  });
+  return args.map((arg, index) => mapToLogAttribute(arg, argMappings[index] ?? `arg${index}`));
 }
 
 function mapArgsToMetadataObject(
