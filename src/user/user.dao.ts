@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'winston';
 import { PetAuthTableName } from '../util/dynamo.config';
 import { HashService } from '../util/hash.service';
-import { Log } from '../util/log.decorator';
+import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { MaskedPasswordLogAttribute } from '../util/masked-password.log-attribute';
 import { ClientInfoForUserNotFoundError } from './client-info-for-user-not-found.error';
@@ -28,8 +28,7 @@ export class UserDao {
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
-  @Log(retrieveLoggerOnClass, {
-    logPromise: true,
+  @LogPromise(retrieveLoggerOnClass, {
     resultMapping: (result: User) => new MaskedPasswordLogAttribute('result', result)
   })
   async findOneByEmail(email: string): Promise<User> {
@@ -46,8 +45,7 @@ export class UserDao {
     return this.mapDbItemToNormalUser(output.Items[0]);
   }
 
-  @Log(retrieveLoggerOnClass, {
-    logPromise: true,
+  @LogPromise(retrieveLoggerOnClass, {
     resultMapping: (result: User) => new MaskedPasswordLogAttribute('result', result)
   })
   async findOneById(id: string): Promise<User> {
@@ -64,8 +62,7 @@ export class UserDao {
     return this.mapDbItemToNormalUser(output.Item);
   }
 
-  @Log(retrieveLoggerOnClass, {
-    logPromise: true,
+  @LogPromise(retrieveLoggerOnClass, {
     argMappings: [(arg: UserRegistrationDto) => new MaskedPasswordLogAttribute('arg1', arg)],
     resultMapping: (result: User) => new MaskedPasswordLogAttribute('result', result)
   })
@@ -104,7 +101,7 @@ export class UserDao {
     return this.mapDbItemToNormalUser(userItem);
   }
 
-  @Log(retrieveLoggerOnClass, { logPromise: true })
+  @LogPromise(retrieveLoggerOnClass)
   async findClientInfoForUser(userId: string, clientId: string): Promise<ClientInfoForUser> {
     const output = await this.client.send(
       new GetItemCommand({
@@ -118,7 +115,7 @@ export class UserDao {
     return this.mapDbItemToClientInfo(output.Item);
   }
 
-  @Log(retrieveLoggerOnClass, { logPromise: true })
+  @LogPromise(retrieveLoggerOnClass)
   async updateClientScopesForUser(clientInfoForUser: ClientInfoForUser): Promise<void> {
     const { userId, clientId, scopes } = clientInfoForUser;
     this.client.send(

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { Log, LogPromise } from '../util/log.decorator';
+import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { MaskedPasswordLogAttribute } from '../util/masked-password.log-attribute';
 import { UserDao } from './user.dao';
@@ -26,7 +26,7 @@ export class UserService {
     return this.mapUserToPublicUser(await this.userDao.insertOne(userRegistrationDto));
   }
 
-  @Log(retrieveLoggerOnClass, { logPromise: true })
+  @LogPromise(retrieveLoggerOnClass)
   async getUsersMatchingConsentedScopesForClient(
     userId: string,
     clientId: string,
