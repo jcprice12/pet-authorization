@@ -2,14 +2,19 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  Inject,
   ParseArrayPipe,
   Query,
   Redirect,
   Req
 } from '@nestjs/common';
 import { Request } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { PublicUser } from '../user/user.model';
 import { UserService } from '../user/user.service';
+import { LogPromise } from '../util/log.decorator';
+import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { ParseOptionalBoolPipe } from '../util/optional-bool.pipe';
 import { RequiredPipe } from '../util/required.pipe';
 import { ValidEnumPipe } from '../util/valid-enum.pipe';
@@ -17,10 +22,16 @@ import { ResponseType } from './response-type.enum';
 
 @Controller('/authorize')
 export class AuthorizeController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
+  ) {}
 
   @Get()
   @Redirect()
+  @LogPromise(retrieveLoggerOnClass, {
+    argMappings: [(req: Request) => ({ name: 'headers', value: req.headers })]
+  })
   async authorize(
     @Req() req: Request,
     @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
@@ -52,7 +63,7 @@ export class AuthorizeController {
 
   private goToLoginPage(uriToGoToAfterLogin: string) {
     return {
-      url: `/user/login?redirect_uri${uriToGoToAfterLogin}`
+      url: `/user/login?redirect_uri=${encodeURIComponent(uriToGoToAfterLogin)}`
     };
   }
 
@@ -62,7 +73,9 @@ export class AuthorizeController {
     const desiredScope = url.searchParams.get('scope');
     url.searchParams.set('should_show_consent_prompt', 'false');
     return {
-      url: `/user/consent?scope=${desiredScope}&client_id=${clientId}&redirect_uri=${url.toString()}`
+      url: `/user/consent?scope=${desiredScope}&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+        url.toString()
+      )}`
     };
   }
 

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   ParseArrayPipe,
   Post,
   Query,
@@ -10,8 +11,12 @@ import {
   UseGuards
 } from '@nestjs/common';
 import { Request } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { AuthenticatedGuard } from '../authentication/authenticated.guard';
 import { LocalAuthGuard } from '../authentication/local-auth.guard';
+import { Log } from '../util/log.decorator';
+import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { RequiredPipe } from '../util/required.pipe';
 import { UserDao } from './user.dao';
 import { PublicUser, UserRegistrationDto } from './user.model';
@@ -19,11 +24,16 @@ import { UserService } from './user.service';
 
 @Controller('/user')
 export class UserController {
-  constructor(private readonly userService: UserService, private readonly userDao: UserDao) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly userDao: UserDao,
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
+  ) {}
 
   @Get('/login')
   @Render('login-user')
-  getUserLoginPage(@Query('redirect_uri', RequiredPipe) redirectUri: string) {
+  @Log(retrieveLoggerOnClass)
+  getUserLoginPage(@Query('redirect_uri') redirectUri?: string) {
     return {
       afterLoginGoTo: redirectUri
     };
@@ -46,9 +56,9 @@ export class UserController {
   @Get('consent')
   @Render('user-consent')
   getUserConsentPage(
-    @Query('redirect_uri', RequiredPipe) redirectUri: string,
     @Query('scope', new ParseArrayPipe({ separator: ' ' })) scopes: Array<string>,
-    @Query('client_id', RequiredPipe) clientId: string
+    @Query('client_id', RequiredPipe) clientId: string,
+    @Query('redirect_uri') redirectUri?: string
   ) {
     return {
       afterConsentGoTo: redirectUri,

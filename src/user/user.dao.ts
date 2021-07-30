@@ -126,9 +126,12 @@ export class UserDao {
           sk: `client#${clientId}`
         }),
         UpdateExpression: 'set scopes = :scopes',
-        ExpressionAttributeValues: marshall({
-          ':scopes': scopes
-        })
+        ExpressionAttributeValues: marshall(
+          {
+            ':scopes': scopes
+          },
+          { removeUndefinedValues: true }
+        )
       })
     );
   }
