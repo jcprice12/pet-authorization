@@ -68,7 +68,7 @@ function mapArgsToLogAttributes(
   args: Array<any>,
   argMappings: Array<string | ((arg: any) => LogAttribute)> = []
 ): Array<LogAttribute> {
-  return args.map((arg, index) => mapToLogAttribute(arg, argMappings[index] ?? `arg${index}`));
+  return args.map((arg, index) => mapToLogAttribute(arg, argMappings[index] ?? `arg${index + 1}`));
 }
 
 function mapArgsToMetadataObject(

@@ -12,18 +12,19 @@ import { Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PublicUser } from '../user/user.model';
-import { UserService } from '../user/user.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { ParseOptionalBoolPipe } from '../util/optional-bool.pipe';
 import { RequiredPipe } from '../util/required.pipe';
 import { ValidEnumPipe } from '../util/valid-enum.pipe';
+import { AuthorizeService } from './authorize.service';
 import { ResponseType } from './response-type.enum';
+import { UserDeniedRequestError } from './user-denied-request.error';
 
 @Controller('/authorize')
 export class AuthorizeController {
   constructor(
-    private readonly userService: UserService,
+    private readonly authorizeService: AuthorizeService,
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
@@ -48,10 +49,7 @@ export class AuthorizeController {
       if (shouldShowConsentPrompt) {
         redirectObject = this.goToConsentPage(req.url);
       } else {
-        redirectObject = this.goToRedirectUri(
-          redirectUri,
-          await this.userService.getUsersMatchingConsentedScopesForClient(user.id, clientId, scope)
-        );
+        redirectObject = await this.goToRedirectUri(redirectUri, clientId, user.id, scope);
       }
     } else if (shouldShowLoginPrompt) {
       redirectObject = this.goToLoginPage(req.url);
@@ -79,13 +77,25 @@ export class AuthorizeController {
     };
   }
 
-  private goToRedirectUri(redirectUri: string, matchingScopes: Array<string>) {
-    const url = new URL(redirectUri);
-    if (!matchingScopes.length) {
-      url.searchParams.set('error', 'access_denied');
+  private async goToRedirectUri(
+    originalredirectUri: string,
+    clientId: string,
+    userId: string,
+    scope: Array<string>
+  ): Promise<{ url: string }> {
+    const newRedirectUri = new URL(originalredirectUri);
+    try {
+      const authCode = await this.authorizeService.createAuthCode(clientId, userId, scope);
+      newRedirectUri.searchParams.set('code', authCode.code);
+    } catch (e) {
+      if (e instanceof UserDeniedRequestError) {
+        newRedirectUri.searchParams.set('error', 'access_denied');
+      } else {
+        newRedirectUri.searchParams.set('error', 'server_error');
+      }
     }
     return {
-      url: url.toString()
+      url: newRedirectUri.toString()
     };
   }
 }

@@ -8,7 +8,7 @@ export class AuthenticationService {
   constructor(private readonly userDao: UserDao, private readonly hashService: HashService) {}
 
   async validateUser(email: string, password: string): Promise<PublicUser> {
-    const user = await this.userDao.findOneByEmail(email);
+    const user = await this.userDao.findUserByEmail(email);
     if (await this.hashService.compare(password, user.password)) {
       const { password, ...publicUser } = user;
       return publicUser;

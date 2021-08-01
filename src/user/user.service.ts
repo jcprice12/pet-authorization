@@ -16,14 +16,14 @@ export class UserService {
 
   @LogPromise(retrieveLoggerOnClass)
   async getPublicUserById(id: string): Promise<PublicUser> {
-    return this.mapUserToPublicUser(await this.userDao.findOneById(id));
+    return this.mapUserToPublicUser(await this.userDao.findUserById(id));
   }
 
   @LogPromise(retrieveLoggerOnClass, {
     argMappings: [(arg: UserRegistrationDto) => new MaskedPasswordLogAttribute('arg1', arg)]
   })
   async registerUser(userRegistrationDto: UserRegistrationDto): Promise<PublicUser> {
-    return this.mapUserToPublicUser(await this.userDao.insertOne(userRegistrationDto));
+    return this.mapUserToPublicUser(await this.userDao.insertUser(userRegistrationDto));
   }
 
   @LogPromise(retrieveLoggerOnClass)

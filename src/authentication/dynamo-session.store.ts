@@ -6,13 +6,17 @@ import {
   PutItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SessionData, Store } from 'express-session';
-import { PetAuthTableName } from '../util/dynamo.config';
+import { DynamoConfig } from '../util/dynamo-config.model';
+import { PET_AUTH_DYNAMO_CONFIG_PROVIDER } from '../util/util.module';
 
 @Injectable()
 export class DynamoSessionStore extends Store {
-  constructor(private readonly dynamoClient: DynamoDBClient) {
+  constructor(
+    private readonly dynamoClient: DynamoDBClient,
+    @Inject(PET_AUTH_DYNAMO_CONFIG_PROVIDER) private readonly config: DynamoConfig
+  ) {
     super();
   }
 
@@ -20,7 +24,7 @@ export class DynamoSessionStore extends Store {
     this.dynamoClient
       .send(
         new DeleteItemCommand({
-          TableName: PetAuthTableName,
+          TableName: this.config.tableName,
           Key: marshall(this.makeKeyBasedOnSid(sid))
         })
       )
@@ -32,7 +36,7 @@ export class DynamoSessionStore extends Store {
     this.dynamoClient
       .send(
         new GetItemCommand({
-          TableName: PetAuthTableName,
+          TableName: this.config.tableName,
           Key: marshall(this.makeKeyBasedOnSid(sid))
         })
       )
@@ -46,7 +50,7 @@ export class DynamoSessionStore extends Store {
     this.dynamoClient
       .send(
         new PutItemCommand({
-          TableName: PetAuthTableName,
+          TableName: this.config.tableName,
           Item: marshall(
             { ...this.makeKeyBasedOnSid(sid), sessionData: session },
             { convertClassInstanceToMap: true, removeUndefinedValues: true }
@@ -58,7 +62,7 @@ export class DynamoSessionStore extends Store {
   }
 
   private makeKeyBasedOnSid(sid: string) {
-    const keyValue = `session#${sid}`;
+    const keyValue = `session${this.config.keyDelimiter}${sid}`;
     return {
       pk: keyValue,
       sk: keyValue
