@@ -10,18 +10,22 @@
   </head>
   <body>
     <form>
+      <input type='hidden' id='scopes' value='{{scopes}}'/>
+      <input type='hidden' id='clientId' value='{{clientId}}'/>
+      <input type='hidden' id='afterConsentGoTo' value='{{afterConsentGoTo}}'/>
       <input type='button' value='Consent' onclick='consent()'/>
     </form>
     <script>
       function consent(){ 
-        var afterConsentGoTo = '{{afterConsentGoTo}}';
+        var afterConsentGoTo = document.getElementById('afterConsentGoTo').value;
+        var scopes = document.getElementById('scopes').value;
+        var clientId = document.getElementById('clientId').value;
         var requestObj = {
-          consentedScopes: []
-        }
-        $.post('/user/consent', requestObj).done(function(){
+          scopes,
+          clientId
+        };
+        $.post('/user/consent', requestObj).always(function(){
           window.location.replace(afterConsentGoTo);
-        }).fail(function(e) {
-          alert('failed to provide consent');
         });
       }
     </script>

@@ -14,7 +14,7 @@
       <input type='text' id='email' name='email' /><br />
       <label for='password'>password</label><br />
       <input type='password' id='password' name='password' /><br />
-      <input type='hidden' id='afterLoginGoTo' value='{{afterLoginGoTo}}'/></br>
+      <input type='hidden' id='afterLoginGoTo' value='{{afterLoginGoTo}}'/>
       <input type='button' value='Login' onclick='login()'/>
     </form>
     <script>
@@ -23,11 +23,9 @@
         var requestObj = {
           email: document.getElementById('email').value,
           password: document.getElementById('password').value
-        }
-        $.post('/user/login', requestObj).done(function(){
+        };
+        $.post('/user/login', requestObj).always(function(){
           window.location.replace(afterLoginGoTo);
-        }).fail(function(e) {
-          alert('login failed');
         });
       }
     </script>
