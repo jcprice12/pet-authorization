@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from '../user/user.module';
-import { UtilModule } from '../util/util.module';
 import { AuthorizeController } from './authorize.controller';
 import { AuthorizeDao } from './authorize.dao';
 import { AuthorizeService } from './authorize.service';
+import { RedirectService } from './redirect.service';
 
 @Module({
-  imports: [UserModule, UtilModule],
+  imports: [UserModule],
   controllers: [AuthorizeController],
-  providers: [AuthorizeService, AuthorizeDao],
-  exports: [AuthorizeService, AuthorizeDao]
+  providers: [AuthorizeService, AuthorizeDao, RedirectService]
 })
 export class AuthorizeModule {}
