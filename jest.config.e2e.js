@@ -1,5 +1,4 @@
 module.exports = {
-  preset: 'ts-jest',
-  rootDir: 'test',
-  testRegex: '.steps.ts$'
+  preset: './jest-e2e-preset.js',
+  testMatch: ['<rootDir>/test/**/*.steps.ts']
 };

@@ -1,7 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { Global, Module, Provider } from '@nestjs/common';
 import { dynamoClientFactory } from './dynamo-client.factory';
-import { DynamoConfig } from './dynamo-config.model';
+import { DynamoConfig, PET_DYNAMO_CONFIG } from './dynamo-config.model';
 import { HashService } from './hash.service';
 import { RequiredPipe } from './required.pipe';
 
@@ -13,12 +13,7 @@ const dynamoDBClientProvider: Provider = {
 };
 const dynamoConfigProvider: Provider<DynamoConfig> = {
   provide: PET_AUTH_DYNAMO_CONFIG_PROVIDER,
-  useValue: {
-    tableName: 'PetAuth',
-    pkName: 'pk',
-    skName: 'sk',
-    keyDelimiter: '#'
-  }
+  useValue: PET_DYNAMO_CONFIG
 };
 
 @Global()

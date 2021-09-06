@@ -1,3 +1,4 @@
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { defineFeature, loadFeature } from 'jest-cucumber';
@@ -26,6 +27,10 @@ defineFeature(feature, (test) => {
 
     app = moduleFixture.createNestApplication();
     World.getInstance().app = await app.init();
+  });
+
+  afterAll(() => {
+    app.get(DynamoDBClient).destroy(); //dynalite hangs if you don't do this
   });
 
   const whenARequestIsMadeToGetAuthTokenWithParams = (when, world: World = World.getInstance()) => {
