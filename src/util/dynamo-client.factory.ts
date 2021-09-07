@@ -1,22 +1,16 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 
-const isLocal = process.env.NODE_ENV === 'local';
-const isTest = process.env.JEST_WORKER_ID;
-
 export const dynamoClientFactory = () => {
-  return new DynamoDBClient({
+  const config = {
     region: 'us-east-1',
-    ...(isLocal && {
+    ...(process.env.NODE_ENV === 'local' && {
       endpoint: 'http://localhost:8000'
     }),
-    ...(isTest && {
-      endpoint: 'http://localhost:8001',
-      sslEnabled: false,
-      region: 'local-env',
-      credentials: {
-        accessKeyId: 'fakeMyKeyId',
-        secretAccessKey: 'fakeSecretAccessKey'
-      }
+    ...(process.env.MOCK_DYNAMODB_ENDPOINT && {
+      endpoint: process.env.MOCK_DYNAMODB_ENDPOINT,
+      tls: false,
+      region: 'local'
     })
-  });
+  };
+  return new DynamoDBClient(config);
 };

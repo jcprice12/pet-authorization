@@ -4,6 +4,7 @@ import { dynamoClientFactory } from './dynamo-client.factory';
 import { DynamoConfig, PET_DYNAMO_CONFIG } from './dynamo-config.model';
 import { HashService } from './hash.service';
 import { RequiredPipe } from './required.pipe';
+import { TransactableWriteService } from './transactable-write.service';
 
 export const PET_AUTH_DYNAMO_CONFIG_PROVIDER = 'PetAuthDynamoConfig';
 
@@ -18,7 +19,19 @@ const dynamoConfigProvider: Provider<DynamoConfig> = {
 
 @Global()
 @Module({
-  providers: [RequiredPipe, dynamoDBClientProvider, HashService, dynamoConfigProvider],
-  exports: [RequiredPipe, dynamoDBClientProvider, HashService, dynamoConfigProvider]
+  providers: [
+    RequiredPipe,
+    dynamoDBClientProvider,
+    HashService,
+    dynamoConfigProvider,
+    TransactableWriteService
+  ],
+  exports: [
+    RequiredPipe,
+    dynamoDBClientProvider,
+    HashService,
+    dynamoConfigProvider,
+    TransactableWriteService
+  ]
 })
 export class UtilModule {}

@@ -1,5 +1,5 @@
 module.exports = {
-  basePort: 8001, //default is 8000 but keeping this here for future knowledge
+  basePort: 8000, //default is 8000 but keeping this here for future knowledge
   tables: [
     {
       TableName: 'PetAuth',

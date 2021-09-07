@@ -3,7 +3,6 @@ import {
   DynamoDBClient,
   GetItemCommand,
   QueryCommand,
-  TransactWriteItemsCommand,
   UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
@@ -16,6 +15,7 @@ import { HashService } from '../util/hash.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { MaskedPasswordLogAttribute } from '../util/masked-password.log-attribute';
+import { TransactableWriteService } from '../util/transactable-write.service';
 import { PET_AUTH_DYNAMO_CONFIG_PROVIDER } from '../util/util.module';
 import { ClientInfoForUser, User, UserRegistrationDto } from './user.model';
 
@@ -25,7 +25,8 @@ export class UserDao {
     private readonly client: DynamoDBClient,
     private readonly hashService: HashService,
     @Inject(PET_AUTH_DYNAMO_CONFIG_PROVIDER) private readonly config: DynamoConfig,
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    private readonly transactableWriteService: TransactableWriteService
   ) {}
 
   @LogPromise(retrieveLoggerOnClass, {
@@ -75,29 +76,21 @@ export class UserDao {
       [this.config.pkName]: userKeyVal,
       [this.config.skName]: userKeyVal
     });
-    await this.client.send(
-      new TransactWriteItemsCommand({
-        TransactItems: [
-          {
-            Put: {
-              TableName: this.config.tableName,
-              ConditionExpression: `attribute_not_exists(${this.config.pkName})`,
-              Item: userItem
-            }
-          },
-          {
-            Put: {
-              TableName: this.config.tableName,
-              ConditionExpression: `attribute_not_exists(${this.config.pkName})`,
-              Item: marshall({
-                [this.config.pkName]: emailKeyVal,
-                [this.config.skName]: emailKeyVal
-              })
-            }
-          }
-        ]
-      })
-    );
+    await this.transactableWriteService.putItemsTransactionally([
+      {
+        TableName: this.config.tableName,
+        ConditionExpression: `attribute_not_exists(${this.config.pkName})`,
+        Item: userItem
+      },
+      {
+        TableName: this.config.tableName,
+        ConditionExpression: `attribute_not_exists(${this.config.pkName})`,
+        Item: marshall({
+          [this.config.pkName]: emailKeyVal,
+          [this.config.skName]: emailKeyVal
+        })
+      }
+    ]);
     return this.mapDbItemToUser(userItem);
   }
 
