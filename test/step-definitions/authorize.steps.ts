@@ -47,13 +47,13 @@ defineFeature(feature, (test) => {
 
   const givenResourceOwnerConsentsTo = (given, world: World = World.getInstance()) => {
     given(
-      /^resource owner with email "(.+)" consents to the "(.+)" scope for client "(.+)"$/,
-      (email, scope, clientId) => {
+      /^resource owner with email "(.+)" consents to the following scopes for client "(.+)":$/,
+      (email, clientId, scopesTable: { scope: string }[]) => {
         return world
           .useSuperAgentTest(email)
           .post('/user/consent')
           .send({
-            scopes: [scope],
+            scopes: scopesTable.map((scopeRow) => scopeRow.scope),
             clientId
           });
       }
@@ -103,7 +103,22 @@ defineFeature(feature, (test) => {
     thenRedirectWithError(then);
   });
 
-  test('Authenticated request leads to redirect with auth code', ({ given, when, then }) => {
+  test('Authenticated request for scope not consented to leads to redirect with error', ({
+    given,
+    when,
+    then
+  }) => {
+    givenResourceOwnerRegisters(given);
+    givenResourceOwnerLogsIn(given);
+    whenAuthorizeRequestMade(when);
+    thenRedirectWithError(then);
+  });
+
+  test('Authenticated request for consented scopes leads to redirect with auth code', ({
+    given,
+    when,
+    then
+  }) => {
     givenResourceOwnerRegisters(given);
     givenResourceOwnerLogsIn(given);
     givenResourceOwnerConsentsTo(given);

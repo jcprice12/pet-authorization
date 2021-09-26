@@ -33,7 +33,7 @@ export class UserService {
     scopes: Array<string>
   ) {
     const clientInfoForUser = await this.userDao.findClientInfoForUser(userId, clientId);
-    return scopes.filter((scope) => clientInfoForUser.scopes.includes(scope));
+    return scopes.filter((scope) => clientInfoForUser?.scopes.includes(scope));
   }
 
   private mapUserToPublicUser(user: User): PublicUser {
