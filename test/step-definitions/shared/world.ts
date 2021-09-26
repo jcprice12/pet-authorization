@@ -24,8 +24,7 @@ export class World {
   }
 
   useSuperAgentTest(key: string): supertest.SuperAgentTest {
-    const superAgentTest =
-      World.instance.superAgentTests.get(key) ?? supertest.agent(World.instance.server);
+    const superAgentTest = World.instance.superAgentTests.get(key) ?? supertest.agent(World.instance.server);
     World.instance.superAgentTests.set(key, superAgentTest);
     return superAgentTest;
   }

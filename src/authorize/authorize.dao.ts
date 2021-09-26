@@ -38,9 +38,7 @@ export class AuthorizeDao {
     return this.mapDbItemToAuthCode(authCodeItem);
   }
 
-  private mapDbItemToAuthCode(
-    item: { [key: string]: AttributeValue } | undefined
-  ): AuthCode | undefined {
+  private mapDbItemToAuthCode(item: { [key: string]: AttributeValue } | undefined): AuthCode | undefined {
     return item ? this.mapDbAuthCodeToAuthCode(unmarshall(item)) : undefined;
   }
 

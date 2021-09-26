@@ -19,19 +19,7 @@ const dynamoConfigProvider: Provider<DynamoConfig> = {
 
 @Global()
 @Module({
-  providers: [
-    RequiredPipe,
-    dynamoDBClientProvider,
-    HashService,
-    dynamoConfigProvider,
-    TransactableWriteService
-  ],
-  exports: [
-    RequiredPipe,
-    dynamoDBClientProvider,
-    HashService,
-    dynamoConfigProvider,
-    TransactableWriteService
-  ]
+  providers: [RequiredPipe, dynamoDBClientProvider, HashService, dynamoConfigProvider, TransactableWriteService],
+  exports: [RequiredPipe, dynamoDBClientProvider, HashService, dynamoConfigProvider, TransactableWriteService]
 })
 export class UtilModule {}

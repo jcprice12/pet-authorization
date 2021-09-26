@@ -9,10 +9,7 @@ import { PublicUser, User, UserRegistrationDto } from './user.model';
 
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly userDao: UserDao,
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
-  ) {}
+  constructor(private readonly userDao: UserDao, @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger) {}
 
   @LogPromise(retrieveLoggerOnClass)
   async getPublicUserById(id: string): Promise<PublicUser> {
@@ -27,11 +24,7 @@ export class UserService {
   }
 
   @LogPromise(retrieveLoggerOnClass)
-  async getUsersMatchingConsentedScopesForClient(
-    userId: string,
-    clientId: string,
-    scopes: Array<string>
-  ) {
+  async getUsersMatchingConsentedScopesForClient(userId: string, clientId: string, scopes: Array<string>) {
     const clientInfoForUser = await this.userDao.findClientInfoForUser(userId, clientId);
     return scopes.filter((scope) => clientInfoForUser?.scopes.includes(scope));
   }

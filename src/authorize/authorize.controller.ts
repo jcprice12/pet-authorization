@@ -50,10 +50,7 @@ export class AuthorizeController {
           redirectObject = await this.authorize(redirectUri, clientId, user.id, scope);
         }
       } else {
-        redirectObject = this.redirectService.goToCbUrlWithError(
-          new URL(redirectUri),
-          ErrorCode.LOGIN_REQUIRED
-        );
+        redirectObject = this.redirectService.goToCbUrlWithError(new URL(redirectUri), ErrorCode.LOGIN_REQUIRED);
       }
     }
     return redirectObject;

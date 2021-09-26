@@ -53,10 +53,7 @@ export function Log(getLogger: LogRetriever, options: LogDecoratorOptions = {}) 
   };
 }
 
-export function LogPromise(
-  getLogger: LogRetriever,
-  options: Omit<LogDecoratorOptions, 'logPromise'> = {}
-) {
+export function LogPromise(getLogger: LogRetriever, options: Omit<LogDecoratorOptions, 'logPromise'> = {}) {
   return Log(getLogger, { ...options, logPromise: true });
 }
 
@@ -71,15 +68,9 @@ function mapArgsToLogAttributes(
   return args.map((arg, index) => mapToLogAttribute(arg, argMappings[index] ?? `arg${index + 1}`));
 }
 
-function mapArgsToMetadataObject(
-  args: Array<any>,
-  argMappings?: Array<string | ((arg: any) => LogAttribute)>
-) {
-  return mapArgsToLogAttributes(args, argMappings).reduce(
-    (accumulator: any, currentLogAttribute: LogAttribute) => {
-      accumulator[currentLogAttribute.name] = currentLogAttribute.value;
-      return accumulator;
-    },
-    {}
-  );
+function mapArgsToMetadataObject(args: Array<any>, argMappings?: Array<string | ((arg: any) => LogAttribute)>) {
+  return mapArgsToLogAttributes(args, argMappings).reduce((accumulator: any, currentLogAttribute: LogAttribute) => {
+    accumulator[currentLogAttribute.name] = currentLogAttribute.value;
+    return accumulator;
+  }, {});
 }

@@ -6,6 +6,14 @@ import { World } from './shared/world';
 
 const feature = loadFeature('test/features/authorize.feature');
 
+const queryParamsNotGood = (url: URL, params: { name: string; value: string }[]) => {
+  return !params.every((param) => {
+    const actualParamValue = url.searchParams.get(param.name);
+    const regex = new RegExp(`^${param.value}$`);
+    return regex.test(actualParamValue);
+  });
+};
+
 defineFeature(feature, (test) => {
   let app: INestApplication;
 
@@ -69,60 +77,62 @@ defineFeature(feature, (test) => {
     );
   };
 
-  const thenRedirectWithError = (then, world: World = World.getInstance()) => {
-    then(/^a redirect is made to "(.+)" with "(.+)" error$/, (redirect_to, error) => {
-      const url = new URL(redirect_to);
-      url.searchParams.set('error', error);
-      return world.superTest.expect(302).expect('Location', url.toString());
-    });
-  };
-
-  const thenRedirectWithAuthCode = (then, world: World = World.getInstance()) => {
-    then(/^a redirect is made to "(.+)" with an auth code$/, (redirect_to) => {
-      return new Promise((resolve, reject) => {
-        world.superTest.expect(302, (err, res) => {
-          if (err) {
-            reject('error occurred during request');
-          }
-          const location: string = res.headers.location;
-          const url = new URL(location);
-          if (url.origin + url.pathname !== redirect_to) {
-            reject('redirect not made correctly');
-          }
-          if (!new RegExp('^[A-Za-z0-9-]+$').test(url.searchParams.get('code'))) {
-            reject('auth code not generated correctly');
-          }
-          resolve(res);
+  const thenRedirectMadeWithFollowingParams = (then, world: World = World.getInstance()) => {
+    then(
+      /^a redirect is made to "(.+)" with the following params:$/,
+      (redirect_to, paramsTable: { name: string; value: string }[]) => {
+        return new Promise((resolve, reject) => {
+          world.superTest.expect(302, (err, res) => {
+            if (err) {
+              reject('error occurred during request');
+            }
+            const location: string = res.headers.location;
+            let url: URL;
+            let redirectLocationNotGood: () => boolean;
+            try {
+              url = new URL(location);
+              redirectLocationNotGood = () => url.origin + url.pathname !== redirect_to;
+            } catch (e) {
+              url = new URL(location, 'http://localhost'); //dummy valid url - only used to get query params easily
+              redirectLocationNotGood = () => url.pathname !== redirect_to;
+            }
+            if (redirectLocationNotGood()) {
+              reject('redirect not made to correct path');
+            } else if (queryParamsNotGood(url, paramsTable)) {
+              reject('not every query param correct');
+            } else {
+              resolve(res);
+            }
+          });
         });
-      });
-    });
+      }
+    );
   };
 
   test('Unauthenticated request leads to redirect with error', ({ when, then }) => {
     whenAuthorizeRequestMade(when);
-    thenRedirectWithError(then);
+    thenRedirectMadeWithFollowingParams(then);
   });
 
-  test('Authenticated request for scope not consented to leads to redirect with error', ({
-    given,
-    when,
-    then
-  }) => {
+  test('Authenticated request for scope not consented to leads to redirect with error', ({ given, when, then }) => {
     givenResourceOwnerRegisters(given);
     givenResourceOwnerLogsIn(given);
     whenAuthorizeRequestMade(when);
-    thenRedirectWithError(then);
+    thenRedirectMadeWithFollowingParams(then);
   });
 
-  test('Authenticated request for consented scopes leads to redirect with auth code', ({
-    given,
-    when,
-    then
-  }) => {
+  test('Authenticated request with consent prompt is taken to consent page', ({ given, when, then }) => {
+    givenResourceOwnerRegisters(given);
+    givenResourceOwnerLogsIn(given);
+    whenAuthorizeRequestMade(when);
+    thenRedirectMadeWithFollowingParams(then);
+  });
+
+  test('Authenticated request for consented scopes leads to redirect with auth code', ({ given, when, then }) => {
     givenResourceOwnerRegisters(given);
     givenResourceOwnerLogsIn(given);
     givenResourceOwnerConsentsTo(given);
     whenAuthorizeRequestMade(when);
-    thenRedirectWithAuthCode(then);
+    thenRedirectMadeWithFollowingParams(then);
   });
 });

@@ -18,11 +18,7 @@ export class AuthorizeService {
   ) {}
 
   @LogPromise(retrieveLoggerOnClass)
-  async createAuthCode(
-    clientId: string,
-    userId: string,
-    desiredScope: Array<string>
-  ): Promise<AuthCode> {
+  async createAuthCode(clientId: string, userId: string, desiredScope: Array<string>): Promise<AuthCode> {
     const matchingScopes = await this.userService.getUsersMatchingConsentedScopesForClient(
       userId,
       clientId,

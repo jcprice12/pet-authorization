@@ -141,9 +141,7 @@ export class UserDao {
     };
   }
 
-  private mapDbItemToClientInfo(
-    item: { [key: string]: AttributeValue } | undefined
-  ): ClientInfoForUser | undefined {
+  private mapDbItemToClientInfo(item: { [key: string]: AttributeValue } | undefined): ClientInfoForUser | undefined {
     return item ? this.mapDbClientInfoForUserToClientInfoForUser(unmarshall(item)) : undefined;
   }
 
