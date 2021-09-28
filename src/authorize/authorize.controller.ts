@@ -43,10 +43,10 @@ export class AuthorizeController {
       redirectObject = this.redirectService.goToLoginPage(fullUrl);
     } else {
       if (req.isAuthenticated()) {
-        const user = req.user as PublicUser;
         if (prompt === Prompt.CONSENT) {
           redirectObject = this.redirectService.goToConsentPage(fullUrl);
         } else {
+          const user = req.user as PublicUser;
           redirectObject = await this.authorize(redirectUri, clientId, user.id, scope);
         }
       } else {

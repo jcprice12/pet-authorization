@@ -70,9 +70,12 @@ defineFeature(feature, (test) => {
 
   const whenAuthorizeRequestMade = (when, world: World = World.getInstance()) => {
     when(
-      /^client makes a request to the authorize endpoint with the following parameters for resource owner "(.+)":$/,
+      /^client makes a request to the authorize endpoint with the following parameters(?::)|(?: for resource owner "(.+)":)$/,
       (agentKey: string, table: any[]) => {
-        world.superTest = world.useSuperAgentTest(agentKey).get('/authorize').query(table[0]);
+        world.superTest = world
+          .useSuperAgentTest(agentKey ?? 'unauthenticated')
+          .get('/authorize')
+          .query(table[0]);
       }
     );
   };
@@ -114,6 +117,11 @@ defineFeature(feature, (test) => {
     thenRedirectMadeWithFollowingParams(then);
   });
 
+  test('Request with login prompt leads to redirect to login page', ({ given, when, then }) => {
+    whenAuthorizeRequestMade(when);
+    thenRedirectMadeWithFollowingParams(then);
+  });
+
   test('Authenticated request for scope not consented to leads to redirect with error', ({ given, when, then }) => {
     givenResourceOwnerRegisters(given);
     givenResourceOwnerLogsIn(given);
@@ -121,7 +129,7 @@ defineFeature(feature, (test) => {
     thenRedirectMadeWithFollowingParams(then);
   });
 
-  test('Authenticated request with consent prompt is taken to consent page', ({ given, when, then }) => {
+  test('Authenticated request with consent prompt leads to redirect to consent page', ({ given, when, then }) => {
     givenResourceOwnerRegisters(given);
     givenResourceOwnerLogsIn(given);
     whenAuthorizeRequestMade(when);
