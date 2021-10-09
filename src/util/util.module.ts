@@ -2,6 +2,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { Global, Module, Provider } from '@nestjs/common';
 import { dynamoClientFactory } from './dynamo-client.factory';
 import { DynamoConfig, PET_DYNAMO_CONFIG } from './dynamo-config.model';
+import { ExpirationService } from './expiration.service';
 import { HashService } from './hash.service';
 import { RequiredPipe } from './required.pipe';
 import { TransactableWriteService } from './transactable-write.service';
@@ -19,7 +20,21 @@ const dynamoConfigProvider: Provider<DynamoConfig> = {
 
 @Global()
 @Module({
-  providers: [RequiredPipe, dynamoDBClientProvider, HashService, dynamoConfigProvider, TransactableWriteService],
-  exports: [RequiredPipe, dynamoDBClientProvider, HashService, dynamoConfigProvider, TransactableWriteService]
+  providers: [
+    RequiredPipe,
+    dynamoDBClientProvider,
+    HashService,
+    dynamoConfigProvider,
+    TransactableWriteService,
+    ExpirationService
+  ],
+  exports: [
+    RequiredPipe,
+    dynamoDBClientProvider,
+    HashService,
+    dynamoConfigProvider,
+    TransactableWriteService,
+    ExpirationService
+  ]
 })
 export class UtilModule {}

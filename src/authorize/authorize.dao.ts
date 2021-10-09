@@ -1,4 +1,4 @@
-import { AttributeValue, DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { AttributeValue, DynamoDBClient, GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -20,7 +20,7 @@ export class AuthorizeDao {
 
   @LogPromise(retrieveLoggerOnClass)
   async insertAuthCode(authCode: Omit<AuthCode, 'code'>): Promise<AuthCode> {
-    const authCodeKeyValue = `auth-code${this.config.keyDelimiter}${uuidv4()}`;
+    const authCodeKeyValue = this.makeAuthCodeKeyValue();
     const authCodeItem = marshall({
       [this.config.pkName]: authCodeKeyValue,
       [this.config.skName]: authCodeKeyValue,
@@ -38,6 +38,20 @@ export class AuthorizeDao {
     return this.mapDbItemToAuthCode(authCodeItem);
   }
 
+  async getAuthCode(code: string): Promise<AuthCode> {
+    const authCodeKeyValue = this.makeAuthCodeKeyValue(code);
+    const output = await this.client.send(
+      new GetItemCommand({
+        TableName: this.config.tableName,
+        Key: marshall({
+          [this.config.pkName]: authCodeKeyValue,
+          [this.config.skName]: authCodeKeyValue
+        })
+      })
+    );
+    return this.mapDbItemToAuthCode(output.Item);
+  }
+
   private mapDbItemToAuthCode(item: { [key: string]: AttributeValue } | undefined): AuthCode | undefined {
     return item ? this.mapDbAuthCodeToAuthCode(unmarshall(item)) : undefined;
   }
@@ -48,5 +62,9 @@ export class AuthorizeDao {
       ...everythingElse,
       code: pk.split(this.config.keyDelimiter)[1]
     };
+  }
+
+  private makeAuthCodeKeyValue(code: string = uuidv4()) {
+    return `auth-code${this.config.keyDelimiter}${code}`;
   }
 }

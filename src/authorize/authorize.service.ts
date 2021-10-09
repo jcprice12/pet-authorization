@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { UsersService } from '../users/users.service';
+import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { AuthorizeDao } from './authorize.dao';
@@ -14,6 +15,7 @@ export class AuthorizeService {
   constructor(
     private readonly authorizeDao: AuthorizeDao,
     private readonly usersService: UsersService,
+    private readonly expirationService: ExpirationService,
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
@@ -31,7 +33,9 @@ export class AuthorizeService {
       clientId,
       userId,
       scope: desiredScope,
-      expires: new Date(Date.now() + this.authCodeExpirationTimeInMilliseconds).toISOString(),
+      expires: this.expirationService.createExpirationDateFromNow({
+        milliseconds: this.authCodeExpirationTimeInMilliseconds
+      }),
       isConsumed: false
     });
   }

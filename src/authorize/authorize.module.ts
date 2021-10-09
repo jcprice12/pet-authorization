@@ -8,6 +8,7 @@ import { RedirectService } from './redirect.service';
 @Module({
   imports: [UsersModule],
   controllers: [AuthorizeController],
-  providers: [AuthorizeService, AuthorizeDao, RedirectService]
+  providers: [AuthorizeService, AuthorizeDao, RedirectService],
+  exports: [AuthorizeDao]
 })
 export class AuthorizeModule {}
