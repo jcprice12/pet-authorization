@@ -15,7 +15,7 @@ export class RedirectService {
 
   goToLoginPage(uriToGoToAfterLogin: URL): RedirectObject {
     uriToGoToAfterLogin.searchParams.set('prompt', Prompt.NONE);
-    return this.goToUrl(`/user/login?redirect_uri=${encodeURIComponent(uriToGoToAfterLogin.toString())}`);
+    return this.goToUrl(`/users/login?redirect_uri=${encodeURIComponent(uriToGoToAfterLogin.toString())}`);
   }
 
   goToConsentPage(uriToGoToAfterConsent: URL): RedirectObject {
@@ -23,7 +23,7 @@ export class RedirectService {
     const desiredScope = uriToGoToAfterConsent.searchParams.get('scope');
     uriToGoToAfterConsent.searchParams.set('prompt', Prompt.NONE);
     return this.goToUrl(
-      `/user/consent?scope=${encodeURIComponent(desiredScope)}&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+      `/users/consent?scope=${encodeURIComponent(desiredScope)}&client_id=${clientId}&redirect_uri=${encodeURIComponent(
         uriToGoToAfterConsent.toString()
       )}`
     );

@@ -2,7 +2,7 @@ import { Controller, Get, Inject, ParseArrayPipe, Query, Redirect, Req } from '@
 import { Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { PublicUser } from '../user/user.model';
+import { PublicUser } from '../users/user.model';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { RequiredPipe } from '../util/required.pipe';

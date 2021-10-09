@@ -7,15 +7,15 @@ import { LocalAuthGuard } from '../authentication/local-auth.guard';
 import { Log } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { RequiredPipe } from '../util/required.pipe';
-import { UserDao } from './user.dao';
+import { UsersDao } from './users.dao';
 import { PublicUser, UserRegistrationDto } from './user.model';
-import { UserService } from './user.service';
+import { UsersService } from './users.service';
 
-@Controller('/user')
-export class UserController {
+@Controller('/users')
+export class UsersController {
   constructor(
-    private readonly userService: UserService,
-    private readonly userDao: UserDao,
+    private readonly usersService: UsersService,
+    private readonly usersDao: UsersDao,
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
@@ -38,7 +38,7 @@ export class UserController {
 
   @Post('/register')
   registerUser(@Body() user: UserRegistrationDto) {
-    return this.userService.registerUser(user);
+    return this.usersService.registerUser(user);
   }
 
   @UseGuards(AuthenticatedGuard)
@@ -63,6 +63,6 @@ export class UserController {
     @Body() consentedScopesForUser: { scopes: Array<string>; clientId: string }
   ) {
     const user = req.user as PublicUser;
-    return this.userDao.updateClientScopesForUser({ ...consentedScopesForUser, userId: user.id });
+    return this.usersDao.updateClientScopesForUser({ ...consentedScopesForUser, userId: user.id });
   }
 }

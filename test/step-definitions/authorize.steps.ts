@@ -35,7 +35,7 @@ defineFeature(feature, (test) => {
 
   const givenResourceOwnerRegisters = (given, world: World = World.getInstance()) => {
     given(/^resource owner registers with email "(.+)" and password "(.+)"$/, (email, password) => {
-      return world.useSuperAgentTest(email).post('/user/register').send({
+      return world.useSuperAgentTest(email).post('/users/register').send({
         email,
         password,
         givenName: 'foo',
@@ -46,7 +46,7 @@ defineFeature(feature, (test) => {
 
   const givenResourceOwnerLogsIn = (given, world: World = World.getInstance()) => {
     given(/^resource owner logs in with email "(.+)" and password "(.+)"$/, (email, password) => {
-      return world.useSuperAgentTest(email).post('/user/login').send({
+      return world.useSuperAgentTest(email).post('/users/login').send({
         email,
         password
       });
@@ -59,7 +59,7 @@ defineFeature(feature, (test) => {
       (email, clientId, scopesTable: { scope: string }[]) => {
         return world
           .useSuperAgentTest(email)
-          .post('/user/consent')
+          .post('/users/consent')
           .send({
             scopes: scopesTable.map((scopeRow) => scopeRow.scope),
             clientId

@@ -12,7 +12,7 @@ Feature: Authorize
     When client makes a request to the authorize endpoint with the following parameters:
       | response_type | client_id | redirect_uri                    | scope  | prompt |
       | code          | 123       | https://foo.bar.com/hello-world | openid | login  |
-    Then a redirect is made to "/user/login" with the following params:
+    Then a redirect is made to "/users/login" with the following params:
       | name         | value                                                                                                                           |
       | redirect_uri | .+\/authorize\?response_type=code&client_id=123&redirect_uri=https%3A%2F%2Ffoo\.bar\.com%2Fhello-world&scope=openid&prompt=none |
 
@@ -32,7 +32,7 @@ Feature: Authorize
     When client makes a request to the authorize endpoint with the following parameters for resource owner "john@gmail.com":
       | response_type | client_id | redirect_uri                    | scope          | prompt  |
       | code          | 123       | https://foo.bar.com/hello-world | openid profile | consent |
-    Then a redirect is made to "/user/consent" with the following params:
+    Then a redirect is made to "/users/consent" with the following params:
       | name         | value                                                                                                                                    |
       | scope        | openid profile                                                                                                                           |
       | client_id    | 123                                                                                                                                      |

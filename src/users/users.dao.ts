@@ -20,7 +20,7 @@ import { PET_AUTH_DYNAMO_CONFIG_PROVIDER } from '../util/util.module';
 import { ClientInfoForUser, User, UserRegistrationDto } from './user.model';
 
 @Injectable()
-export class UserDao {
+export class UsersDao {
   constructor(
     private readonly client: DynamoDBClient,
     private readonly hashService: HashService,
