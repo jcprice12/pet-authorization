@@ -34,7 +34,7 @@ export class AuthorizeController {
     @FullURL() fullUrl: URL,
     @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
     @Query('client_id', RequiredPipe) clientId: string,
-    @Query('scope', new ParseArrayPipe({ separator: ' ' })) scope: Array<string>,
+    @Query('scope', new ParseArrayPipe({ separator: ' ' })) scopes: Array<string>,
     @Query('redirect_uri') redirectUri?: string,
     @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string
   ): Promise<RedirectObject> {
@@ -47,7 +47,7 @@ export class AuthorizeController {
           redirectObject = this.redirectService.goToConsentPage(fullUrl);
         } else {
           const user = req.user as PublicUser;
-          redirectObject = await this.authorize(redirectUri, clientId, user.id, scope);
+          redirectObject = await this.authorize(redirectUri, clientId, user.id, scopes);
         }
       } else {
         redirectObject = this.redirectService.goToCbUrlWithError(new URL(redirectUri), ErrorCode.LOGIN_REQUIRED);
@@ -60,11 +60,11 @@ export class AuthorizeController {
     originalredirectUri: string,
     clientId: string,
     userId: string,
-    scope: Array<string>
+    scopes: Array<string>
   ): Promise<RedirectObject> {
     const newRedirectUri = new URL(originalredirectUri);
     try {
-      const authCode = await this.authorizeService.createAuthCode(clientId, userId, scope);
+      const authCode = await this.authorizeService.createAuthCode(clientId, userId, scopes);
       return this.redirectService.goToCbUrlWithAuthCode(newRedirectUri, authCode.code);
     } catch (e) {
       return e instanceof UserDeniedRequestError

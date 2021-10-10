@@ -1,4 +1,10 @@
-import { AttributeValue, DynamoDBClient, GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import {
+  AttributeValue,
+  DynamoDBClient,
+  GetItemCommand,
+  PutItemCommand,
+  UpdateItemCommand
+} from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -20,14 +26,9 @@ export class AuthorizeDao {
 
   @LogPromise(retrieveLoggerOnClass)
   async insertAuthCode(authCode: Omit<AuthCode, 'code'>): Promise<AuthCode> {
-    const authCodeKeyValue = this.makeAuthCodeKeyValue();
     const authCodeItem = marshall({
-      [this.config.pkName]: authCodeKeyValue,
-      [this.config.skName]: authCodeKeyValue,
-      clientId: authCode.clientId,
-      userId: authCode.userId,
-      isConsumed: authCode.isConsumed,
-      expires: authCode.expires
+      ...this.makeUnmarshalledKeyForAuthCodeItem(),
+      ...authCode
     });
     await this.client.send(
       new PutItemCommand({
@@ -38,18 +39,29 @@ export class AuthorizeDao {
     return this.mapDbItemToAuthCode(authCodeItem);
   }
 
+  @LogPromise(retrieveLoggerOnClass)
   async getAuthCode(code: string): Promise<AuthCode> {
-    const authCodeKeyValue = this.makeAuthCodeKeyValue(code);
     const output = await this.client.send(
       new GetItemCommand({
         TableName: this.config.tableName,
-        Key: marshall({
-          [this.config.pkName]: authCodeKeyValue,
-          [this.config.skName]: authCodeKeyValue
-        })
+        Key: this.makeKeyForAuthCodeItem(code)
       })
     );
     return this.mapDbItemToAuthCode(output.Item);
+  }
+
+  @LogPromise(retrieveLoggerOnClass)
+  async updateConsumeFlagForAuthCode(code: string, isConsumed: boolean) {
+    this.client.send(
+      new UpdateItemCommand({
+        TableName: this.config.tableName,
+        Key: this.makeKeyForAuthCodeItem(code),
+        UpdateExpression: 'set isConsumed = :isConsumed',
+        ExpressionAttributeValues: marshall({
+          ':isConsumed': isConsumed
+        })
+      })
+    );
   }
 
   private mapDbItemToAuthCode(item: { [key: string]: AttributeValue } | undefined): AuthCode | undefined {
@@ -64,7 +76,21 @@ export class AuthorizeDao {
     };
   }
 
-  private makeAuthCodeKeyValue(code: string = uuidv4()) {
+  private makeAuthCodeKeyValue(code: string = uuidv4()): string {
     return `auth-code${this.config.keyDelimiter}${code}`;
+  }
+
+  private makeUnmarshalledKeyForAuthCodeItem(code?: string): { [key: string]: string } {
+    const authCodeKeyValue = this.makeAuthCodeKeyValue(code);
+    return {
+      [this.config.pkName]: authCodeKeyValue,
+      [this.config.skName]: authCodeKeyValue
+    };
+  }
+
+  private makeKeyForAuthCodeItem(code?: string): {
+    [key: string]: AttributeValue;
+  } {
+    return marshall(this.makeUnmarshalledKeyForAuthCodeItem(code));
   }
 }

@@ -10,7 +10,7 @@ import { UserDeniedRequestError } from './user-denied-request.error';
 
 @Injectable()
 export class AuthorizeService {
-  private readonly authCodeExpirationTimeInMilliseconds = 600000;
+  private readonly minutesUntilAuthCodeExpires = 10;
 
   constructor(
     private readonly authorizeDao: AuthorizeDao,
@@ -20,11 +20,11 @@ export class AuthorizeService {
   ) {}
 
   @LogPromise(retrieveLoggerOnClass)
-  async createAuthCode(clientId: string, userId: string, desiredScope: Array<string>): Promise<AuthCode> {
+  async createAuthCode(clientId: string, userId: string, desiredScopes: Array<string>): Promise<AuthCode> {
     const matchingScopes = await this.usersService.getUsersMatchingConsentedScopesForClient(
       userId,
       clientId,
-      desiredScope
+      desiredScopes
     );
     if (!matchingScopes.length) {
       throw new UserDeniedRequestError('user has not provided consent for any desired scopes');
@@ -32,9 +32,9 @@ export class AuthorizeService {
     return this.authorizeDao.insertAuthCode({
       clientId,
       userId,
-      scope: desiredScope,
+      scopes: desiredScopes,
       expires: this.expirationService.createExpirationDateFromNow({
-        milliseconds: this.authCodeExpirationTimeInMilliseconds
+        minutes: this.minutesUntilAuthCodeExpires
       }),
       isConsumed: false
     });

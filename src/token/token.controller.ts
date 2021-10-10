@@ -15,7 +15,7 @@ export class TokenController {
   @Post('/')
   @UsePipes(new ValidationPipe({ transform: true }))
   @LogPromise(retrieveLoggerOnClass)
-  async createToken(@Body() createTokenDto: CreateTokenDto): Promise<TokenResponse> {
-    return this.tokenService.createToken(createTokenDto);
+  async issueTokens(@Body() createTokenDto: CreateTokenDto): Promise<TokenResponse> {
+    return this.tokenService.issueTokens(createTokenDto);
   }
 }
