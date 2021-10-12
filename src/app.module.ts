@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { format, transports } from 'winston';
 import { AuthenticationModule } from './authentication/authentication.module';
@@ -8,6 +9,9 @@ import { UtilModule } from './util/util.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
     WinstonModule.forRoot({
       transports: [new transports.Console({ format: format.json() })]
     }),

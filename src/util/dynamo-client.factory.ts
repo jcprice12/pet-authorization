@@ -1,9 +1,10 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { ConfigService } from '@nestjs/config';
 
-export const dynamoClientFactory = () => {
+export const dynamoClientFactory = (configService: ConfigService) => {
   const config = {
     region: 'us-east-1',
-    ...(process.env.NODE_ENV === 'local' && {
+    ...(configService.get('NODE_ENV') === 'local' && {
       endpoint: 'http://localhost:8000'
     }),
     ...(process.env.MOCK_DYNAMODB_ENDPOINT && {

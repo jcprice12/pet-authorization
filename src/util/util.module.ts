@@ -1,5 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { Global, Module, Provider } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { dynamoClientFactory } from './dynamo-client.factory';
 import { DynamoConfig, PET_DYNAMO_CONFIG } from './dynamo-config.model';
 import { ExpirationService } from './expiration.service';
@@ -11,7 +12,8 @@ export const PET_AUTH_DYNAMO_CONFIG_PROVIDER = 'PetAuthDynamoConfig';
 
 const dynamoDBClientProvider: Provider = {
   provide: DynamoDBClient,
-  useFactory: dynamoClientFactory
+  useFactory: dynamoClientFactory,
+  inject: [ConfigService]
 };
 const dynamoConfigProvider: Provider<DynamoConfig> = {
   provide: PET_AUTH_DYNAMO_CONFIG_PROVIDER,
