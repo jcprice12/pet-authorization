@@ -2,12 +2,14 @@ import { Logger } from 'winston';
 import { LogAttribute } from './log-attribute.model';
 
 export type LogRetriever = (that?: any) => Logger;
-
+export type LogMapping = string | ((val: any) => LogAttribute);
 export type LogDecoratorOptions = {
   logPromise?: boolean;
-  argMappings?: Array<string | ((arg: any) => LogAttribute)>;
-  resultMapping?: string | ((result: any) => LogAttribute);
+  argMappings?: Array<LogMapping>;
+  resultMapping?: LogMapping;
   successMessage?: string;
+  errorMapping?: LogMapping;
+  errorMessage?: string;
 };
 
 export function Log(getLogger: LogRetriever, options: LogDecoratorOptions = {}) {
@@ -23,14 +25,19 @@ export function Log(getLogger: LogRetriever, options: LogDecoratorOptions = {}) 
         function onSuccess(result: any) {
           const resultLogAttribute = mapToLogAttribute(result, options.resultMapping ?? 'result');
           logger.info({
-            message: options.successMessage || 'successful method invocation',
+            message: options.successMessage || 'successful method execution',
             [resultLogAttribute.name]: resultLogAttribute.value,
             ...logAttributes
           });
           return result;
         }
         function onFailure(e: Error) {
-          logger.error({ message: e.stack || e.message, ...logAttributes });
+          const errorLogAttribute = mapToLogAttribute(e.stack || e.message, options.errorMapping ?? 'error');
+          logger.error({
+            message: options.errorMessage || 'unsuccessful method execution',
+            [errorLogAttribute.name]: errorLogAttribute.value,
+            ...logAttributes
+          });
           throw e;
         }
         async function awaitAction() {
@@ -57,18 +64,15 @@ export function LogPromise(getLogger: LogRetriever, options: Omit<LogDecoratorOp
   return Log(getLogger, { ...options, logPromise: true });
 }
 
-function mapToLogAttribute(value: any, mapping: string | ((val: any) => LogAttribute)) {
+function mapToLogAttribute(value: any, mapping: LogMapping) {
   return typeof mapping === 'string' ? { name: mapping, value } : mapping(value);
 }
 
-function mapArgsToLogAttributes(
-  args: Array<any>,
-  argMappings: Array<string | ((arg: any) => LogAttribute)> = []
-): Array<LogAttribute> {
+function mapArgsToLogAttributes(args: Array<any>, argMappings: Array<LogMapping> = []): Array<LogAttribute> {
   return args.map((arg, index) => mapToLogAttribute(arg, argMappings[index] ?? `arg${index + 1}`));
 }
 
-function mapArgsToMetadataObject(args: Array<any>, argMappings?: Array<string | ((arg: any) => LogAttribute)>) {
+function mapArgsToMetadataObject(args: Array<any>, argMappings?: Array<LogMapping>) {
   return mapArgsToLogAttributes(args, argMappings).reduce((accumulator: any, currentLogAttribute: LogAttribute) => {
     accumulator[currentLogAttribute.name] = currentLogAttribute.value;
     return accumulator;
