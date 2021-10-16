@@ -1,8 +1,9 @@
 import { Logger } from 'winston';
+import { LogAttributeFactory } from './log-attribute.factory';
 import { LogAttribute } from './log-attribute.model';
 
 export type LogRetriever = (that?: any) => Logger;
-export type LogMapping = string | ((val: any) => LogAttribute);
+export type LogMapping = string | LogAttributeFactory;
 export type LogDecoratorOptions = {
   logPromise?: boolean;
   argMappings?: Array<LogMapping>;

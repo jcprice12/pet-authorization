@@ -5,6 +5,7 @@ import { AuthCode } from '../authorize/authorize.model';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
+import { MaskedAuthCodeLogAttribute } from '../util/masked-auth-code.log-attribute';
 import { InvalidGrantError } from './invalid-grant.error';
 import { TokenType } from './token-type.enum';
 import { TokenDao } from './token.dao';
@@ -19,7 +20,9 @@ export class TokenService {
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
-  @LogPromise(retrieveLoggerOnClass)
+  @LogPromise(retrieveLoggerOnClass, {
+    argMappings: [(arg: CreateTokenDto) => new MaskedAuthCodeLogAttribute('createTokenDto', arg)]
+  })
   async issueTokens(createTokenDto: CreateTokenDto): Promise<TokenResponse> {
     const authCode: AuthCode = await this.authorizeDao.getAuthCode(createTokenDto.code);
     this.validateAuthCode(authCode);

@@ -3,6 +3,7 @@ import { Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PublicUser } from '../users/user.model';
+import { LogAttributeValue } from '../util/log-attribute-value.enum';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { RequiredPipe } from '../util/required.pipe';
@@ -27,7 +28,7 @@ export class AuthorizeController {
   @Get()
   @Redirect()
   @LogPromise(retrieveLoggerOnClass, {
-    argMappings: [(req: Request) => ({ name: 'headers', value: req.headers })]
+    argMappings: [() => ({ name: 'req', value: LogAttributeValue.IGNORED })]
   })
   async handleAuthorizeRequest(
     @Req() req: Request,

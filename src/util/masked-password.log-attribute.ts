@@ -1,10 +1,9 @@
-import { cloneDeep } from 'lodash';
-import { LogAttribute } from './log-attribute.model';
+import { SimpleMaskedLogAttribute } from './simple-masked.log-attribute';
 
-export class MaskedPasswordLogAttribute implements LogAttribute {
-  public readonly value: { password: string };
-  constructor(public readonly name: string, thingWithPassword: { password: string }) {
-    this.value = cloneDeep(thingWithPassword);
-    this.value.password = '****';
+export type ThingWithPassword = { password: string };
+
+export class MaskedPasswordLogAttribute extends SimpleMaskedLogAttribute<ThingWithPassword> {
+  constructor(name: string, thingWithPassword: ThingWithPassword) {
+    super(name, thingWithPassword, 'password');
   }
 }

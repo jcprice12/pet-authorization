@@ -4,6 +4,7 @@ import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
+import { MaskedAuthCodeLogAttribute } from '../util/masked-auth-code.log-attribute';
 import { AuthorizeDao } from './authorize.dao';
 import { AuthCode } from './authorize.model';
 import { UserDeniedRequestError } from './user-denied-request.error';
@@ -19,7 +20,9 @@ export class AuthorizeService {
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
-  @LogPromise(retrieveLoggerOnClass)
+  @LogPromise(retrieveLoggerOnClass, {
+    resultMapping: (result: AuthCode) => new MaskedAuthCodeLogAttribute('result', result)
+  })
   async createAuthCode(clientId: string, userId: string, desiredScopes: Array<string>): Promise<AuthCode> {
     const matchingScopes = await this.usersService.getUsersMatchingConsentedScopesForClient(
       userId,
