@@ -1,20 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { exportJWK } from 'jose';
 import { Algorithm } from './algorithm.enum';
 import { JWKS } from './jwks.model';
-import { KeyType } from './key-type.enum';
+import { KEY_PAIR_SERVICE_PROVIDER } from './key-pair-service.provider';
+import { KeyPairService } from './key-pair.service';
 import { PublicKeyUse } from './public-key-use';
 
 @Injectable()
 export class KeysService {
-  getKeySet(): JWKS {
+  constructor(@Inject(KEY_PAIR_SERVICE_PROVIDER) private readonly keyPairService: KeyPairService) {}
+
+  async getKeySet(): Promise<JWKS> {
     return {
       keys: [
-        {
-          alg: Algorithm.RS256,
-          use: PublicKeyUse.SIG,
-          kty: KeyType.RSA,
-          kid: 'foo'
-        }
+        { ...(await exportJWK(await this.keyPairService.getPublicKey())), use: PublicKeyUse.SIG, alg: Algorithm.RS256 }
       ]
     };
   }

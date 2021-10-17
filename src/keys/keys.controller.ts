@@ -7,7 +7,7 @@ export class KeysController {
   constructor(private readonly keysService: KeysService) {}
 
   @Get('/')
-  getKeySet(): JWKS {
+  getKeySet(): Promise<JWKS> {
     return this.keysService.getKeySet();
   }
 }

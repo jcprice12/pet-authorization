@@ -1,4 +1,4 @@
-import { JWK } from './jwk.model';
+import { JWK } from 'jose';
 
 /**
  * https://datatracker.ietf.org/doc/html/rfc7517
