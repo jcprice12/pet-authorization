@@ -2,13 +2,12 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { AuthorizeDao } from '../authorize/authorize.dao';
 import { AuthCode } from '../authorize/authorize.model';
+import { MaskedAuthCodeLogAttribute } from '../authorize/masked-auth-code.log-attribute';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
-import { MaskedAuthCodeLogAttribute } from '../util/masked-auth-code.log-attribute';
 import { InvalidGrantError } from './invalid-grant.error';
 import { TokenType } from './token-type.enum';
-import { TokenDao } from './token.dao';
 import { CreateTokenDto, TokenResponse } from './token.model';
 
 @Injectable()
@@ -16,7 +15,6 @@ export class TokenService {
   constructor(
     private readonly authorizeDao: AuthorizeDao,
     private readonly expirationService: ExpirationService,
-    private readonly tokenDao: TokenDao,
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 

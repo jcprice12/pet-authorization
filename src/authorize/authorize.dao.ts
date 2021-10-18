@@ -14,7 +14,7 @@ import { DynamoConfig } from '../util/dynamo-config.model';
 import { LogAttributeValue } from '../util/log-attribute-value.enum';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
-import { MaskedAuthCodeLogAttribute } from '../util/masked-auth-code.log-attribute';
+import { MaskedAuthCodeLogAttribute } from './masked-auth-code.log-attribute';
 import { PET_AUTH_DYNAMO_CONFIG_PROVIDER } from '../util/util.module';
 import { AuthCode } from './authorize.model';
 

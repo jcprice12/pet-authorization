@@ -14,7 +14,7 @@ import { DynamoConfig } from '../util/dynamo-config.model';
 import { HashService } from '../util/hash.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
-import { MaskedPasswordLogAttribute } from '../util/masked-password.log-attribute';
+import { MaskedUserLogAttribute } from './masked-user.log-attribute';
 import { TransactableWriteService } from '../util/transactable-write.service';
 import { PET_AUTH_DYNAMO_CONFIG_PROVIDER } from '../util/util.module';
 import { ClientInfoForUser, User, UserRegistrationDto } from './user.model';
@@ -30,7 +30,7 @@ export class UsersDao {
   ) {}
 
   @LogPromise(retrieveLoggerOnClass, {
-    resultMapping: (result: User) => new MaskedPasswordLogAttribute('result', result)
+    resultMapping: (result: User) => new MaskedUserLogAttribute('result', result)
   })
   async findUserByEmail(email: string): Promise<User> {
     const output = await this.client.send(
@@ -47,7 +47,7 @@ export class UsersDao {
   }
 
   @LogPromise(retrieveLoggerOnClass, {
-    resultMapping: (result: User) => new MaskedPasswordLogAttribute('result', result)
+    resultMapping: (result: User) => new MaskedUserLogAttribute('result', result)
   })
   async findUserById(id: string): Promise<User> {
     const keyVal = `user${this.config.keyDelimiter}${id}`;
@@ -64,8 +64,8 @@ export class UsersDao {
   }
 
   @LogPromise(retrieveLoggerOnClass, {
-    argMappings: [(arg: UserRegistrationDto) => new MaskedPasswordLogAttribute('arg1', arg)],
-    resultMapping: (result: User) => new MaskedPasswordLogAttribute('result', result)
+    argMappings: [(arg: UserRegistrationDto) => new MaskedUserLogAttribute('arg1', arg)],
+    resultMapping: (result: User) => new MaskedUserLogAttribute('result', result)
   })
   async insertUser(userDto: UserRegistrationDto): Promise<User> {
     const userKeyVal = `user${this.config.keyDelimiter}${uuidv4()}`;
