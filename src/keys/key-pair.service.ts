@@ -1,6 +1,5 @@
-import { KeyLike } from 'jose';
+import { KeyPair } from './key-pair.model';
 
 export interface KeyPairService {
-  getPublicKey(): Promise<KeyLike>;
-  getPrivateKey(): Promise<KeyLike>;
+  getKeyPair(): Promise<KeyPair>;
 }

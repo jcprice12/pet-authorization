@@ -11,9 +11,15 @@ export class KeysService {
   constructor(@Inject(KEY_PAIR_SERVICE_PROVIDER) private readonly keyPairService: KeyPairService) {}
 
   async getKeySet(): Promise<JWKS> {
+    const keyPair = await this.keyPairService.getKeyPair();
     return {
       keys: [
-        { ...(await exportJWK(await this.keyPairService.getPublicKey())), use: PublicKeyUse.SIG, alg: Algorithm.RS256 }
+        {
+          ...(await exportJWK(keyPair.publicKey)),
+          kid: keyPair.kid,
+          use: PublicKeyUse.SIG,
+          alg: Algorithm.RS256
+        }
       ]
     };
   }
