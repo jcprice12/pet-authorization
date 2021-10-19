@@ -1,8 +1,12 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { SignJWT } from 'jose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { AuthorizeDao } from '../authorize/authorize.dao';
 import { AuthCode } from '../authorize/authorize.model';
 import { MaskedAuthCodeLogAttribute } from '../authorize/masked-auth-code.log-attribute';
+import { KEY_PAIR_SERVICE_PROVIDER } from '../keys/key-pair-service.provider';
+import { KeyPair } from '../keys/key-pair.model';
+import { KeyPairService } from '../keys/key-pair.service';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
@@ -12,9 +16,12 @@ import { CreateTokenDto, TokenResponse } from './token.model';
 
 @Injectable()
 export class TokenService {
+  private readonly accessTokenExpirationTimeInSeconds = 600;
+
   constructor(
     private readonly authorizeDao: AuthorizeDao,
     private readonly expirationService: ExpirationService,
+    @Inject(KEY_PAIR_SERVICE_PROVIDER) private readonly keyPairService: KeyPairService,
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
@@ -24,11 +31,36 @@ export class TokenService {
   async issueTokens(createTokenDto: CreateTokenDto): Promise<TokenResponse> {
     const authCode: AuthCode = await this.authorizeDao.getAuthCode(createTokenDto.code);
     this.validateAuthCode(authCode);
-    return {
-      access_token: 'todo',
-      expires_in: 'todo',
+    const keyPair = await this.keyPairService.getKeyPair();
+    const tokenResponse = {
+      access_token: await this.createSignedAccessJwt(authCode, keyPair),
+      scope: this.mapScopesToString(authCode.scopes),
+      expires_in: this.accessTokenExpirationTimeInSeconds,
       token_type: TokenType.BEARER
     };
+    return tokenResponse;
+  }
+
+  private createSignedAccessJwt(authCode: AuthCode, keyPair: KeyPair): Promise<string> {
+    const scope = this.mapScopesToString(authCode.scopes);
+    return new SignJWT({ scope })
+      .setProtectedHeader({ alg: keyPair.alg })
+      .setIssuedAt()
+      .setSubject(authCode.clientId)
+      .setExpirationTime(
+        this.expirationService.createExpirationDateFromNowAsMillisecondsSinceEpoch({
+          seconds: this.accessTokenExpirationTimeInSeconds
+        })
+      )
+      .sign(keyPair.privateKey);
+  }
+
+  private mapScopesToString(scopes: Array<string>) {
+    return scopes
+      .reduce((previous, current) => {
+        return (previous += `${current} `);
+      }, '')
+      .trim();
   }
 
   private validateAuthCode(authCode: AuthCode): void {

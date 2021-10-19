@@ -11,7 +11,8 @@ export class LocalKeyPairService implements KeyPairService, OnModuleInit {
   async onModuleInit(): Promise<void> {
     this.keyPair = {
       ...(await generateKeyPair(Algorithm.RS256)),
-      kid: 'local-key'
+      kid: 'local-key',
+      alg: Algorithm.RS256
     };
   }
 

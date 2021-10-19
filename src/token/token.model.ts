@@ -26,5 +26,7 @@ export class CreateTokenDto {
 export interface TokenResponse {
   access_token: string;
   token_type: TokenType;
-  expires_in: string;
+  expires_in: number;
+  scope: string;
+  id_token?: string;
 }

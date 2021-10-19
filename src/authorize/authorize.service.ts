@@ -4,9 +4,9 @@ import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
-import { MaskedAuthCodeLogAttribute } from './masked-auth-code.log-attribute';
 import { AuthorizeDao } from './authorize.dao';
 import { AuthCode } from './authorize.model';
+import { MaskedAuthCodeLogAttribute } from './masked-auth-code.log-attribute';
 import { UserDeniedRequestError } from './user-denied-request.error';
 
 @Injectable()
@@ -36,7 +36,7 @@ export class AuthorizeService {
       clientId,
       userId,
       scopes: desiredScopes,
-      expires: this.expirationService.createExpirationDateFromNow({
+      expires: this.expirationService.createExpirationDateFromNowAsIsoString({
         minutes: this.minutesUntilAuthCodeExpires
       }),
       isConsumed: false
