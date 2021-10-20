@@ -17,6 +17,7 @@ import { CreateTokenDto, TokenResponse } from './token.model';
 @Injectable()
 export class TokenService {
   private readonly accessTokenExpirationTimeInSeconds = 600;
+  private readonly idTokenExpirationTimeInSeconds = 600;
 
   constructor(
     private readonly authorizeDao: AuthorizeDao,
@@ -31,17 +32,37 @@ export class TokenService {
   async issueTokens(createTokenDto: CreateTokenDto): Promise<TokenResponse> {
     const authCode: AuthCode = await this.authorizeDao.getAuthCode(createTokenDto.code);
     this.validateAuthCode(authCode);
+    return this.createTokenResponse(authCode);
+  }
+
+  private async createTokenResponse(authCode: AuthCode): Promise<TokenResponse> {
     const keyPair = await this.keyPairService.getKeyPair();
-    const tokenResponse = {
-      access_token: await this.createSignedAccessJwt(authCode, keyPair),
+    const tokenResponse: TokenResponse = {
+      access_token: await this.createSignedAccessTokenJwt(authCode, keyPair),
       scope: this.mapScopesToString(authCode.scopes),
       expires_in: this.accessTokenExpirationTimeInSeconds,
       token_type: TokenType.BEARER
     };
+    if (authCode.scopes.includes('openid')) {
+      tokenResponse.id_token = await this.createSignedIdTokenJwt(authCode, keyPair);
+    }
     return tokenResponse;
   }
 
-  private createSignedAccessJwt(authCode: AuthCode, keyPair: KeyPair): Promise<string> {
+  private async createSignedIdTokenJwt(authCode: AuthCode, keyPair: KeyPair): Promise<string> {
+    return new SignJWT({})
+      .setProtectedHeader({ alg: keyPair.alg })
+      .setIssuedAt()
+      .setSubject(authCode.userId)
+      .setExpirationTime(
+        this.expirationService.createExpirationDateFromNowAsMillisecondsSinceEpoch({
+          seconds: this.idTokenExpirationTimeInSeconds
+        })
+      )
+      .sign(keyPair.privateKey);
+  }
+
+  private createSignedAccessTokenJwt(authCode: AuthCode, keyPair: KeyPair): Promise<string> {
     const scope = this.mapScopesToString(authCode.scopes);
     return new SignJWT({ scope })
       .setProtectedHeader({ alg: keyPair.alg })
