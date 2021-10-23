@@ -42,17 +42,15 @@ export class AuthorizeController {
     let redirectObject: RedirectObject;
     if (prompt === Prompt.LOGIN) {
       redirectObject = this.redirectService.goToLoginPage(fullUrl);
-    } else {
-      if (req.isAuthenticated()) {
-        if (prompt === Prompt.CONSENT) {
-          redirectObject = this.redirectService.goToConsentPage(fullUrl);
-        } else {
-          const user = req.user as PublicUser;
-          redirectObject = await this.authorize(redirectUri, clientId, user.id, scopes);
-        }
+    } else if (req.isAuthenticated()) {
+      if (prompt === Prompt.CONSENT) {
+        redirectObject = this.redirectService.goToConsentPage(fullUrl);
       } else {
-        redirectObject = this.redirectService.goToCbUrlWithError(new URL(redirectUri), ErrorCode.LOGIN_REQUIRED);
+        const user = req.user as PublicUser;
+        redirectObject = await this.authorize(redirectUri, clientId, user.id, scopes);
       }
+    } else {
+      redirectObject = this.redirectService.goToCbUrlWithError(new URL(redirectUri), ErrorCode.LOGIN_REQUIRED);
     }
     return redirectObject;
   }

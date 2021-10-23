@@ -24,11 +24,7 @@ export class AuthorizeService {
     resultMapping: (result: AuthCode) => new MaskedAuthCodeLogAttribute('result', result)
   })
   async createAuthCode(clientId: string, userId: string, desiredScopes: Array<string>): Promise<AuthCode> {
-    const matchingScopes = await this.usersService.getUsersMatchingConsentedScopesForClient(
-      userId,
-      clientId,
-      desiredScopes
-    );
+    const matchingScopes = await this.usersService.getConsentedScopesByUserAndClient(userId, clientId, desiredScopes);
     if (!matchingScopes.length) {
       throw new UserDeniedRequestError('user has not provided consent for any desired scopes');
     }

@@ -14,7 +14,9 @@ export class UsersService {
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
-  @LogPromise(retrieveLoggerOnClass)
+  @LogPromise(retrieveLoggerOnClass, {
+    resultMapping: (result) => new MaskedUserLogAttribute('result', result)
+  })
   async getPublicUserById(id: string): Promise<PublicUser> {
     return this.mapUserToPublicUser(await this.usersDao.findUserById(id));
   }
@@ -27,12 +29,12 @@ export class UsersService {
   }
 
   @LogPromise(retrieveLoggerOnClass)
-  async getUsersMatchingConsentedScopesForClient(userId: string, clientId: string, scopes: Array<string>) {
+  async getConsentedScopesByUserAndClient(userId: string, clientId: string, scopes: Array<string>) {
     const clientInfoForUser = await this.usersDao.findClientInfoForUser(userId, clientId);
     return scopes.filter((scope) => clientInfoForUser?.scopes.includes(scope));
   }
 
-  private mapUserToPublicUser(user: User): PublicUser {
+  public mapUserToPublicUser(user: User): PublicUser {
     const { password, ...everythingElse } = user;
     return everythingElse;
   }
