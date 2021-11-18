@@ -5,6 +5,6 @@ import { UserInfo } from './user.model';
 export class UserInfoController {
   @Get('/')
   async getUserInfo(): Promise<UserInfo> {
-    return Promise.resolve({});
+    return Promise.resolve({ sub: 'foo' });
   }
 }
