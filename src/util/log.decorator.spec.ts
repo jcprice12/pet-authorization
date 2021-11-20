@@ -1,5 +1,5 @@
 import { Logger } from 'winston';
-import { LogOnArrival, LogOnError, LogOnResult } from './log.decorator';
+import { Log, LogOnArrival, LogOnError, LogOnResult } from './log.decorator';
 
 describe('Given logger', () => {
   let errorSpy: jest.Mock;
@@ -1045,13 +1045,87 @@ describe('Given logger', () => {
 
         it('Then no log is generated', () => {
           expect(errorSpy).not.toHaveBeenCalled();
+          return promise.catch((e) => e);
         });
 
-        it('Then promise is returned and will reject with original error', (done) => {
-          return promise.catch((e) => {
+        it('Then promise is returned and will reject with original error', async () => {
+          try {
+            await promise;
+            fail('an error should have been thrown');
+          } catch (e) {
             expect(e).toBe(errorToThrow);
-            done();
+          }
+        });
+      });
+    });
+
+    describe('Given method decorated with Log that will execute successfully', () => {
+      class ClassToTest {
+        constructor(private readonly classField: string) {}
+        @Log(logRetriever)
+        testLogging(
+          _p1: string,
+          _p2: number,
+          _p3: boolean,
+          _p4: (arb: string) => string,
+          _p5: ArbitraryClass,
+          _p6: ArbitraryInterface
+        ): string {
+          return this.classField;
+        }
+      }
+
+      let constructorArg: string;
+      let classToTest: ClassToTest;
+      beforeEach(() => {
+        constructorArg = 'yooo';
+        classToTest = new ClassToTest(constructorArg);
+      });
+
+      describe('When invoking method', () => {
+        let result: string;
+        beforeEach(() => {
+          result = classToTest.testLogging(
+            arbitraryString,
+            arbitraryNumber,
+            arbitraryBoolean,
+            arbitraryFunction,
+            arbitraryInstance,
+            arbitraryObj
+          );
+        });
+
+        it('Then correct log is generated on arrival', () => {
+          expect(infoSpy).toHaveBeenCalledWith({
+            message: 'method invoked',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arg2: arbitraryNumber,
+            arg3: arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj
           });
+        });
+
+        it('Then correct log is generated on result', () => {
+          expect(infoSpy).toHaveBeenCalledWith({
+            message: 'successful method execution',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arg2: arbitraryNumber,
+            arg3: arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj,
+            result
+          });
+        });
+
+        it('Then original return value is returned', () => {
+          expect(result).toBe(constructorArg);
         });
       });
     });
