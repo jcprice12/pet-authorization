@@ -1,14 +1,17 @@
 import { Logger } from 'winston';
-import { LogOnArrival, LogOnResult } from './log.decorator';
+import { LogOnArrival, LogOnError, LogOnResult } from './log.decorator';
 
 describe('Given logger', () => {
+  let errorSpy: jest.Mock;
   let infoSpy: jest.Mock;
   let logger: Logger;
   const logRetriever = () => logger;
   beforeEach(() => {
     infoSpy = jest.fn();
+    errorSpy = jest.fn();
     logger = {
-      info: infoSpy
+      info: infoSpy,
+      error: errorSpy
     } as unknown as Logger;
   });
 
@@ -622,6 +625,67 @@ describe('Given logger', () => {
           return result.then((val) => {
             expect(val).toBe(constructorArg);
           });
+        });
+      });
+    });
+
+    describe('Given default LogOnError options', () => {
+      class ClassToTest {
+        constructor(private readonly error: Error) {}
+        @LogOnError(logRetriever)
+        testLogging(
+          _p1: string,
+          _p2: number,
+          _p3: boolean,
+          _p4: (arb: string) => string,
+          _p5: ArbitraryClass,
+          _p6: ArbitraryInterface
+        ): void {
+          throw this.error;
+        }
+      }
+
+      let errorToThrow: Error;
+      let classToTest: ClassToTest;
+      beforeEach(() => {
+        errorToThrow = new Error('err');
+        classToTest = new ClassToTest(errorToThrow);
+      });
+
+      describe('When invoking method', () => {
+        let thrownError: Error;
+        beforeEach(() => {
+          try {
+            classToTest.testLogging(
+              arbitraryString,
+              arbitraryNumber,
+              arbitraryBoolean,
+              arbitraryFunction,
+              arbitraryInstance,
+              arbitraryObj
+            );
+          } catch (e) {
+            thrownError = e;
+          }
+        });
+
+        it('Then correct log is generated', () => {
+          expect(errorSpy).toHaveBeenCalledWith({
+            message: 'unsuccessful method execution',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arg2: arbitraryNumber,
+            arg3: arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj,
+            error: thrownError.message
+          });
+        });
+
+        it('Then original error is thrown', () => {
+          expect(thrownError).toBe(errorToThrow);
         });
       });
     });
