@@ -505,5 +505,66 @@ describe('Given logger', () => {
         });
       });
     });
+
+    describe('Given would not like to await for promise-returning method decorated with LogOnResult', () => {
+      class ClassToTest {
+        constructor(private readonly classField: string) {}
+        @LogOnResult(logRetriever, {
+          wouldLikeToAwait: false //default but making clear for purpose of test
+        })
+        testLogging(
+          _p1: string,
+          _p2: number,
+          _p3: boolean,
+          _p4: (arb: string) => string,
+          _p5: ArbitraryClass,
+          _p6: ArbitraryInterface
+        ): Promise<string> {
+          return Promise.resolve(this.classField);
+        }
+      }
+
+      let constructorArg: string;
+      let classToTest: ClassToTest;
+      beforeEach(() => {
+        constructorArg = 'yooo';
+        classToTest = new ClassToTest(constructorArg);
+      });
+
+      describe('When invoking method', () => {
+        let result: Promise<string>;
+        beforeEach(() => {
+          result = classToTest.testLogging(
+            arbitraryString,
+            arbitraryNumber,
+            arbitraryBoolean,
+            arbitraryFunction,
+            arbitraryInstance,
+            arbitraryObj
+          );
+        });
+
+        it('Then log is generated when promise is returned rather than after promise resolves', () => {
+          expect(infoSpy).toHaveBeenCalledWith({
+            message: 'successful method execution',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arg2: arbitraryNumber,
+            arg3: arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj,
+            result
+          });
+        });
+
+        it('Then promise returned and value can be resolved', () => {
+          return result.then((val) => {
+            expect(val).toBe(constructorArg);
+          });
+        });
+      });
+    });
   });
 });
