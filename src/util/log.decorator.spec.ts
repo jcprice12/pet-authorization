@@ -689,5 +689,371 @@ describe('Given logger', () => {
         });
       });
     });
+
+    describe('Given arg mappings for LogOnError', () => {
+      class ClassToTest {
+        constructor(private readonly error: Error) {}
+        @LogOnError(logRetriever, {
+          argMappings: [null, 'arbNumber', (arg: boolean) => ({ name: 'arbBool', value: !arg })]
+        })
+        testLogging(
+          _p1: string,
+          _p2: number,
+          _p3: boolean,
+          _p4: (arb: string) => string,
+          _p5: ArbitraryClass,
+          _p6: ArbitraryInterface
+        ): void {
+          throw this.error;
+        }
+      }
+
+      let errorToThrow: Error;
+      let classToTest: ClassToTest;
+      beforeEach(() => {
+        errorToThrow = new Error('err');
+        classToTest = new ClassToTest(errorToThrow);
+      });
+
+      describe('When invoking method', () => {
+        let thrownError: Error;
+        beforeEach(() => {
+          try {
+            classToTest.testLogging(
+              arbitraryString,
+              arbitraryNumber,
+              arbitraryBoolean,
+              arbitraryFunction,
+              arbitraryInstance,
+              arbitraryObj
+            );
+          } catch (e) {
+            thrownError = e;
+          }
+        });
+
+        it('Then correct log is generated', () => {
+          expect(errorSpy).toHaveBeenCalledWith({
+            message: 'unsuccessful method execution',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arbNumber: arbitraryNumber,
+            arbBool: !arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj,
+            error: thrownError.message
+          });
+        });
+
+        it('Then original error is thrown', () => {
+          expect(thrownError).toBe(errorToThrow);
+        });
+      });
+    });
+
+    describe('Given error mapping for LogOnError', () => {
+      class ClassToTest {
+        constructor(private readonly error: Error) {}
+        @LogOnError(logRetriever, {
+          errorMapping: (e: Error) => ({ name: 'err', value: e.stack })
+        })
+        testLogging(
+          _p1: string,
+          _p2: number,
+          _p3: boolean,
+          _p4: (arb: string) => string,
+          _p5: ArbitraryClass,
+          _p6: ArbitraryInterface
+        ): void {
+          throw this.error;
+        }
+      }
+
+      let errorToThrow: Error;
+      let classToTest: ClassToTest;
+      beforeEach(() => {
+        errorToThrow = new Error('err');
+        classToTest = new ClassToTest(errorToThrow);
+      });
+
+      describe('When invoking method', () => {
+        let thrownError: Error;
+        beforeEach(() => {
+          try {
+            classToTest.testLogging(
+              arbitraryString,
+              arbitraryNumber,
+              arbitraryBoolean,
+              arbitraryFunction,
+              arbitraryInstance,
+              arbitraryObj
+            );
+          } catch (e) {
+            thrownError = e;
+          }
+        });
+
+        it('Then correct log is generated', () => {
+          expect(errorSpy).toHaveBeenCalledWith({
+            message: 'unsuccessful method execution',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arg2: arbitraryNumber,
+            arg3: arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj,
+            err: thrownError.stack
+          });
+        });
+
+        it('Then original error is thrown', () => {
+          expect(thrownError).toBe(errorToThrow);
+        });
+      });
+    });
+
+    describe('Given error message for LogOnError', () => {
+      class ClassToTest {
+        constructor(private readonly error: Error) {}
+        @LogOnError(logRetriever, {
+          errorMessage: 'I have errored'
+        })
+        testLogging(
+          _p1: string,
+          _p2: number,
+          _p3: boolean,
+          _p4: (arb: string) => string,
+          _p5: ArbitraryClass,
+          _p6: ArbitraryInterface
+        ): void {
+          throw this.error;
+        }
+      }
+
+      let errorToThrow: Error;
+      let classToTest: ClassToTest;
+      beforeEach(() => {
+        errorToThrow = new Error('err');
+        classToTest = new ClassToTest(errorToThrow);
+      });
+
+      describe('When invoking method', () => {
+        let thrownError: Error;
+        beforeEach(() => {
+          try {
+            classToTest.testLogging(
+              arbitraryString,
+              arbitraryNumber,
+              arbitraryBoolean,
+              arbitraryFunction,
+              arbitraryInstance,
+              arbitraryObj
+            );
+          } catch (e) {
+            thrownError = e;
+          }
+        });
+
+        it('Then correct log is generated', () => {
+          expect(errorSpy).toHaveBeenCalledWith({
+            message: 'I have errored',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arg2: arbitraryNumber,
+            arg3: arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj,
+            error: thrownError.message
+          });
+        });
+
+        it('Then original error is thrown', () => {
+          expect(thrownError).toBe(errorToThrow);
+        });
+      });
+    });
+
+    describe('Given would like to await for non-promise-returning method decorated with LogOnError', () => {
+      class ClassToTest {
+        constructor(private readonly error: Error) {}
+        @LogOnError(logRetriever, {
+          wouldLikeToAwait: true
+        })
+        testLogging(
+          _p1: string,
+          _p2: number,
+          _p3: boolean,
+          _p4: (arb: string) => string,
+          _p5: ArbitraryClass,
+          _p6: ArbitraryInterface
+        ): void {
+          throw this.error;
+        }
+      }
+
+      let errorToThrow: Error;
+      let classToTest: ClassToTest;
+      beforeEach(() => {
+        errorToThrow = new Error('err');
+        classToTest = new ClassToTest(errorToThrow);
+      });
+
+      describe('When invoking method', () => {
+        let thrownError: Error;
+        beforeEach(() => {
+          try {
+            classToTest.testLogging(
+              arbitraryString,
+              arbitraryNumber,
+              arbitraryBoolean,
+              arbitraryFunction,
+              arbitraryInstance,
+              arbitraryObj
+            );
+          } catch (e) {
+            thrownError = e;
+          }
+        });
+
+        it('Then correct log is generated', () => {
+          expect(errorSpy).toHaveBeenCalledWith({
+            message: 'unsuccessful method execution',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arg2: arbitraryNumber,
+            arg3: arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj,
+            error: thrownError.message
+          });
+        });
+
+        it('Then original error is thrown', () => {
+          expect(thrownError).toBe(errorToThrow);
+        });
+      });
+    });
+
+    describe('Given would like to await for promise-returning method decorated with LogOnError', () => {
+      class ClassToTest {
+        constructor(private readonly error: Error) {}
+        @LogOnError(logRetriever, {
+          wouldLikeToAwait: true
+        })
+        testLogging(
+          _p1: string,
+          _p2: number,
+          _p3: boolean,
+          _p4: (arb: string) => string,
+          _p5: ArbitraryClass,
+          _p6: ArbitraryInterface
+        ): Promise<void> {
+          return Promise.reject(this.error);
+        }
+      }
+
+      let errorToThrow: Error;
+      let classToTest: ClassToTest;
+      beforeEach(() => {
+        errorToThrow = new Error('err');
+        classToTest = new ClassToTest(errorToThrow);
+      });
+
+      describe('When invoking method', () => {
+        let thrownError: Error;
+        beforeEach(async () => {
+          try {
+            await classToTest.testLogging(
+              arbitraryString,
+              arbitraryNumber,
+              arbitraryBoolean,
+              arbitraryFunction,
+              arbitraryInstance,
+              arbitraryObj
+            );
+          } catch (e) {
+            thrownError = e;
+          }
+        });
+
+        it('Then correct log is generated', () => {
+          expect(errorSpy).toHaveBeenCalledWith({
+            message: 'unsuccessful method execution',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arg2: arbitraryNumber,
+            arg3: arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj,
+            error: thrownError.message
+          });
+        });
+
+        it('Then original error is rejected', () => {
+          expect(thrownError).toBe(errorToThrow);
+        });
+      });
+    });
+
+    describe('Given would not like to await for promise-returning method decorated with LogOnError', () => {
+      class ClassToTest {
+        constructor(private readonly error: Error) {}
+        @LogOnError(logRetriever, {
+          wouldLikeToAwait: false
+        })
+        testLogging(
+          _p1: string,
+          _p2: number,
+          _p3: boolean,
+          _p4: (arb: string) => string,
+          _p5: ArbitraryClass,
+          _p6: ArbitraryInterface
+        ): Promise<void> {
+          return Promise.reject(this.error);
+        }
+      }
+
+      let errorToThrow: Error;
+      let classToTest: ClassToTest;
+      beforeEach(() => {
+        errorToThrow = new Error('err');
+        classToTest = new ClassToTest(errorToThrow);
+      });
+
+      describe('When invoking method', () => {
+        let promise: Promise<void>;
+        beforeEach(() => {
+          promise = classToTest.testLogging(
+            arbitraryString,
+            arbitraryNumber,
+            arbitraryBoolean,
+            arbitraryFunction,
+            arbitraryInstance,
+            arbitraryObj
+          );
+        });
+
+        it('Then no log is generated', () => {
+          expect(errorSpy).not.toHaveBeenCalled();
+        });
+
+        it('Then promise is returned and will reject with original error', (done) => {
+          return promise.catch((e) => {
+            expect(e).toBe(errorToThrow);
+            done();
+          });
+        });
+      });
+    });
   });
 });
