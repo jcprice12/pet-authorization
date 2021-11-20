@@ -104,7 +104,7 @@ export function LogOnResult(getLogger: LogRetriever, options: LogOnResultOptions
         const result = original.apply(thisArg, args);
         return shouldAwaitAction(finalOptions.wouldLikeToAwait, result)
           ? result.then((valToResolve: any) => onSuccess(valToResolve))
-          : result;
+          : onSuccess(result);
       }
     });
   };
