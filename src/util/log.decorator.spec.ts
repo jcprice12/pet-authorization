@@ -1129,5 +1129,80 @@ describe('Given logger', () => {
         });
       });
     });
+
+    describe('Given method decorated with Log that will throw an error', () => {
+      class ClassToTest {
+        constructor(private readonly error: Error) {}
+        @Log(logRetriever)
+        testLogging(
+          _p1: string,
+          _p2: number,
+          _p3: boolean,
+          _p4: (arb: string) => string,
+          _p5: ArbitraryClass,
+          _p6: ArbitraryInterface
+        ): void {
+          throw this.error;
+        }
+      }
+
+      let errorToThrow: Error;
+      let classToTest: ClassToTest;
+      beforeEach(() => {
+        errorToThrow = new Error('err');
+        classToTest = new ClassToTest(errorToThrow);
+      });
+
+      describe('When invoking method', () => {
+        let thrownError: Error;
+        beforeEach(() => {
+          try {
+            classToTest.testLogging(
+              arbitraryString,
+              arbitraryNumber,
+              arbitraryBoolean,
+              arbitraryFunction,
+              arbitraryInstance,
+              arbitraryObj
+            );
+          } catch (e) {
+            thrownError = e;
+          }
+        });
+
+        it('Then correct log is generated on arrival', () => {
+          expect(infoSpy).toHaveBeenCalledWith({
+            message: 'method invoked',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arg2: arbitraryNumber,
+            arg3: arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj
+          });
+        });
+
+        it('Then correct log is generated when error is thrown', () => {
+          expect(errorSpy).toHaveBeenCalledWith({
+            message: 'unsuccessful method execution',
+            class: 'ClassToTest',
+            method: 'testLogging',
+            arg1: arbitraryString,
+            arg2: arbitraryNumber,
+            arg3: arbitraryBoolean,
+            arg4: arbitraryFunction,
+            arg5: arbitraryInstance,
+            arg6: arbitraryObj,
+            error: thrownError.message
+          });
+        });
+
+        it('Then original error is thrown', () => {
+          expect(thrownError).toBe(errorToThrow);
+        });
+      });
+    });
   });
 });
