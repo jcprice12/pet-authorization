@@ -1,6 +1,7 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SignJWT } from 'jose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { AuthorizeDao } from '../authorize/authorize.dao';
 import { AuthCode } from '../authorize/authorize.model';
 import { MaskedAuthCodeLogAttribute } from '../authorize/masked-auth-code.log-attribute';

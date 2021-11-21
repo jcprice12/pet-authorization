@@ -1,8 +1,9 @@
-import { Body, Controller, Inject, Logger, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Inject, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { MaskedAuthCodeLogAttribute } from '../authorize/masked-auth-code.log-attribute';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
-import { MaskedAuthCodeLogAttribute } from '../authorize/masked-auth-code.log-attribute';
 import { CreateTokenDto, TokenResponse } from './token.model';
 import { TokenService } from './token.service';
 

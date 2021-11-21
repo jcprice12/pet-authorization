@@ -1,5 +1,6 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
