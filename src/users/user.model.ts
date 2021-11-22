@@ -27,11 +27,8 @@ export interface UserRegistrationDto extends UserBase {
  * OIDC user info.
  * The spec provides a non-normative example with snake case. Because I am lazy and it is only a suggestion to use snake-case, I am using camel case
  */
-export interface UserInfo {
+export interface UserInfo extends Partial<UserBase> {
   sub: string;
-  email?: string;
-  givenName?: string;
-  familyName?: string;
 }
 /**
  * User's relationship to client - E.G. consented scopes client can use

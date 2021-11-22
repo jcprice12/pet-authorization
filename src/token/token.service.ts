@@ -55,6 +55,7 @@ export class TokenService {
       .setProtectedHeader({ alg: keyPair.alg })
       .setIssuedAt()
       .setSubject(authCode.userId)
+      .setAudience(authCode.clientId)
       .setExpirationTime(
         this.expirationService.createExpirationDateFromNowAsMillisecondsSinceEpoch({
           seconds: this.idTokenExpirationTimeInSeconds
@@ -68,7 +69,7 @@ export class TokenService {
     return new SignJWT({ scope })
       .setProtectedHeader({ alg: keyPair.alg })
       .setIssuedAt()
-      .setSubject(authCode.clientId)
+      .setSubject(authCode.userId)
       .setExpirationTime(
         this.expirationService.createExpirationDateFromNowAsMillisecondsSinceEpoch({
           seconds: this.accessTokenExpirationTimeInSeconds
