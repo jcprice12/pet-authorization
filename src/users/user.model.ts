@@ -38,3 +38,7 @@ export interface ClientInfoForUser {
   clientId: string;
   scopes: Array<string>;
 }
+
+export interface UserWithScopes extends PublicUser {
+  scopes: Array<string>;
+}

@@ -5,7 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { KEY_PAIR_SERVICE_PROVIDER } from '../keys/key-pair-service.provider';
 import { KeyPair } from '../keys/key-pair.model';
 import { KeyPairService } from '../keys/key-pair.service';
-import { PublicUser } from '../users/user.model';
+import { UserWithScopes } from '../users/user.model';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -45,7 +45,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @param accessTokenPayload B
    * @returns PublicUser
    */
-  async validate(accessTokenPayload: any): Promise<PublicUser> {
-    return this.usersService.getPublicUserById(accessTokenPayload.sub);
+  async validate(accessTokenPayload: any): Promise<UserWithScopes> {
+    const publicUser = await this.usersService.getPublicUserById(accessTokenPayload.sub);
+    const trimmedScope = accessTokenPayload.scope?.trim();
+    const scopes = trimmedScope ? trimmedScope.split(' ') : [];
+    return {
+      ...publicUser,
+      scopes
+    };
   }
 }
