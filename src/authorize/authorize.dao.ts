@@ -11,10 +11,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'winston';
 import { DynamoConfig } from '../util/dynamo-config.model';
-import { LogAttributeValue } from '../util/log-attribute-value.enum';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
-import { MaskedAuthCodeLogAttribute } from './masked-auth-code.log-attribute';
 import { PET_AUTH_DYNAMO_CONFIG_PROVIDER } from '../util/util.module';
 import { AuthCode } from './authorize.model';
 
@@ -26,9 +24,7 @@ export class AuthorizeDao {
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
-  @LogPromise(retrieveLoggerOnClass, {
-    resultMapping: (result: AuthCode) => new MaskedAuthCodeLogAttribute('result', result)
-  })
+  @LogPromise(retrieveLoggerOnClass)
   async insertAuthCode(authCode: Omit<AuthCode, 'code'>): Promise<AuthCode> {
     const authCodeItem = marshall({
       ...this.makeUnmarshalledKeyForAuthCodeItem(),
@@ -43,10 +39,8 @@ export class AuthorizeDao {
     return this.mapDbItemToAuthCode(authCodeItem);
   }
 
-  @LogPromise(retrieveLoggerOnClass, {
-    resultMapping: (result: AuthCode) => new MaskedAuthCodeLogAttribute('result', result)
-  })
-  async getAuthCode(code: string): Promise<AuthCode> {
+  @LogPromise(retrieveLoggerOnClass)
+  async findAuthCode(code: string): Promise<AuthCode> {
     const output = await this.client.send(
       new GetItemCommand({
         TableName: this.config.tableName,
@@ -56,9 +50,9 @@ export class AuthorizeDao {
     return this.mapDbItemToAuthCode(output.Item);
   }
 
-  @LogPromise(retrieveLoggerOnClass, { argMappings: [() => ({ name: 'code', value: LogAttributeValue.MASK })] })
-  async updateConsumeFlagForAuthCode(code: string, isConsumed: boolean) {
-    this.client.send(
+  @LogPromise(retrieveLoggerOnClass)
+  async updateConsumeFlagForAuthCode(code: string, isConsumed: boolean): Promise<void> {
+    await this.client.send(
       new UpdateItemCommand({
         TableName: this.config.tableName,
         Key: this.makeKeyForAuthCodeItem(code),

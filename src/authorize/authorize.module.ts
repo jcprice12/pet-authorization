@@ -9,6 +9,6 @@ import { RedirectService } from './redirect.service';
   imports: [UsersModule],
   controllers: [AuthorizeController],
   providers: [AuthorizeService, AuthorizeDao, RedirectService],
-  exports: [AuthorizeDao]
+  exports: [AuthorizeService]
 })
 export class AuthorizeModule {}

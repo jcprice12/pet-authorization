@@ -63,7 +63,7 @@ export class AuthorizeController {
   ): Promise<RedirectObject> {
     const newRedirectUri = new URL(originalredirectUri);
     try {
-      const authCode = await this.authorizeService.createAuthCode(clientId, userId, scopes);
+      const authCode = await this.authorizeService.createAuthCode(clientId, userId, scopes, originalredirectUri);
       return this.redirectService.goToCbUrlWithAuthCode(newRedirectUri, authCode.code);
     } catch (e) {
       return e instanceof UserDeniedRequestError
