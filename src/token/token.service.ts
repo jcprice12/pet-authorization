@@ -2,14 +2,17 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SignJWT } from 'jose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { AuthCodeNotFoundError } from '../authorize/auth-code-not-found.error';
 import { AuthCode } from '../authorize/authorize.model';
 import { AuthorizeService } from '../authorize/authorize.service';
+import { InvalidAuthCodeError } from '../authorize/invalid-auth-code.error';
 import { KEY_PAIR_SERVICE_PROVIDER } from '../keys/key-pair-service.provider';
 import { KeyPair } from '../keys/key-pair.model';
 import { KeyPairService } from '../keys/key-pair.service';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
+import { InvalidGrantError } from './invalid-grant.error';
 import { TokenType } from './token-type.enum';
 import { ExchangeAuthCodeForTokensDto, TokenResource } from './token.model';
 
@@ -27,17 +30,24 @@ export class TokenService {
 
   @LogPromise(retrieveLoggerOnClass)
   async exchangeAuthCodeForTokens(exchangeAuthCodeForTokenDto: ExchangeAuthCodeForTokensDto): Promise<TokenResource> {
-    const authCode: AuthCode = await this.authorizeService.exchangeUntrustedAuthCodeForTrustedAuthCode({
-      clientId: exchangeAuthCodeForTokenDto.client_id,
-      code: exchangeAuthCodeForTokenDto.code,
-      redirectUri: exchangeAuthCodeForTokenDto.redirect_uri
-    });
-    const tokens = this.createTokensForAuthCode(authCode);
-    await this.authorizeService.consumeAuthCode(authCode.code); //TODO: check if auth code should be consumed if expired or something
-    return tokens;
+    try {
+      const authCode: AuthCode = await this.authorizeService.exchangeUntrustedAuthCodeForTrustedAuthCode({
+        clientId: exchangeAuthCodeForTokenDto.client_id,
+        code: exchangeAuthCodeForTokenDto.code,
+        redirectUri: exchangeAuthCodeForTokenDto.redirect_uri
+      });
+      const tokens = this.createTokensForAuthCode(authCode);
+      await this.authorizeService.consumeAuthCode(authCode.code);
+      return tokens;
+    } catch (e) {
+      if (e instanceof InvalidAuthCodeError || e instanceof AuthCodeNotFoundError) {
+        throw new InvalidGrantError(); //TODO: "SHOULD" revoke related access tokens for already consumed auth code
+      }
+      throw e;
+    }
   }
 
-  async createTokensForAuthCode(authCode: AuthCode): Promise<TokenResource> {
+  private async createTokensForAuthCode(authCode: AuthCode): Promise<TokenResource> {
     const keyPair = await this.keyPairService.getKeyPair();
     const tokenResponse: TokenResource = {
       access_token: await this.createSignedAccessTokenJwt(authCode, keyPair),

@@ -1,13 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { InvalidGrantError } from '../token/invalid-grant.error';
 import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
+import { AuthCodeNotFoundError } from './auth-code-not-found.error';
 import { AuthorizeDao } from './authorize.dao';
 import { AuthCode, AuthCodeBase } from './authorize.model';
+import { AuthCodeConsumedError, AuthCodeExpiredError, AuthCodeUntrustedError } from './invalid-auth-code.error';
 import { UserDeniedRequestError } from './user-denied-request.error';
 
 @Injectable()
@@ -45,33 +46,49 @@ export class AuthorizeService {
   }
 
   @LogPromise(retrieveLoggerOnClass)
-  async exchangeUntrustedAuthCodeForTrustedAuthCode(untrustedAuthCode: AuthCodeBase): Promise<AuthCode> {
-    const trustedAuthCode = await this.authorizeDao.findAuthCode(untrustedAuthCode.code);
-    this.validateUnstrustedAuthCodeCanBeTrusted(untrustedAuthCode, trustedAuthCode);
-    return trustedAuthCode;
+  async getAuthCode(code: string): Promise<AuthCode> {
+    const authCode: AuthCode = await this.authorizeDao.findAuthCode(code);
+    if (!authCode) {
+      throw new AuthCodeNotFoundError();
+    }
+    return authCode;
   }
 
-  private validateUnstrustedAuthCodeCanBeTrusted(
-    untrustedAuthCode: AuthCodeBase,
-    trustedAuthCode: AuthCode | undefined
-  ): void {
-    function doesUntrustedAuthCodeMatchTrustedAuthCode() {
-      return (
-        untrustedAuthCode.clientId === trustedAuthCode.clientId &&
-        untrustedAuthCode.redirectUri === trustedAuthCode.redirectUri
-      );
-    }
-    if (
-      !trustedAuthCode ||
-      !doesUntrustedAuthCodeMatchTrustedAuthCode() ||
-      this.expirationService.isExpired(trustedAuthCode.expires)
-    ) {
-      throw new InvalidGrantError();
-    }
+  @LogPromise(retrieveLoggerOnClass)
+  async exchangeUntrustedAuthCodeForTrustedAuthCode(untrustedAuthCode: AuthCodeBase): Promise<AuthCode> {
+    const trustedAuthCode = await this.getAuthCode(untrustedAuthCode.code);
+    this.validateUntrustedAuthCodeMatchesTrustedAuthCode(untrustedAuthCode, trustedAuthCode);
+    this.validateAuthCodeHasNotExpired(trustedAuthCode);
+    this.validateAuthCodeHasNotBeenConsumed(trustedAuthCode);
+    return trustedAuthCode;
   }
 
   @LogPromise(retrieveLoggerOnClass)
   async consumeAuthCode(code: string): Promise<void> {
     await this.authorizeDao.updateConsumeFlagForAuthCode(code, true);
+  }
+
+  private validateUntrustedAuthCodeMatchesTrustedAuthCode(
+    untrustedAuthCode: AuthCodeBase,
+    trustedAuthCode: AuthCode
+  ): void {
+    if (
+      untrustedAuthCode.clientId === trustedAuthCode.clientId &&
+      untrustedAuthCode.redirectUri === trustedAuthCode.redirectUri
+    ) {
+      throw new AuthCodeUntrustedError();
+    }
+  }
+
+  private validateAuthCodeHasNotExpired(authCode: AuthCode): void {
+    if (this.expirationService.isExpired(authCode.expires)) {
+      throw new AuthCodeExpiredError();
+    }
+  }
+
+  private validateAuthCodeHasNotBeenConsumed(authCode: AuthCode): void {
+    if (authCode.isConsumed) {
+      throw new AuthCodeConsumedError();
+    }
   }
 }
