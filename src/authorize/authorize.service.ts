@@ -65,7 +65,7 @@ export class AuthorizeService {
 
   @LogPromise(retrieveLoggerOnClass)
   async consumeAuthCode(code: string): Promise<void> {
-    await this.authorizeDao.updateConsumeFlagForAuthCode(code, true);
+    await this.authorizeDao.updateAuthCode({ code, isConsumed: true });
   }
 
   private validateUntrustedAuthCodeMatchesTrustedAuthCode(

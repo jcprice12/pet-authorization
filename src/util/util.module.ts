@@ -5,6 +5,7 @@ import { AsyncLocalStorageService } from './async-local-storage.service';
 import { CorrelationIdMiddleware } from './correlation-id.middleware';
 import { dynamoClientFactory } from './dynamo-client.factory';
 import { DynamoConfig, PET_DYNAMO_CONFIG } from './dynamo-config.model';
+import { DynamoUpdateService } from './dynamo-update.service';
 import { ExpirationService } from './expiration.service';
 import { HashService } from './hash.service';
 import { RequiredPipe } from './required.pipe';
@@ -31,7 +32,8 @@ const dynamoConfigProvider: Provider<DynamoConfig> = {
     HashService,
     dynamoConfigProvider,
     TransactableWriteService,
-    ExpirationService
+    ExpirationService,
+    DynamoUpdateService
   ],
   exports: [
     AsyncLocalStorageService,
@@ -40,7 +42,8 @@ const dynamoConfigProvider: Provider<DynamoConfig> = {
     HashService,
     dynamoConfigProvider,
     TransactableWriteService,
-    ExpirationService
+    ExpirationService,
+    DynamoUpdateService
   ]
 })
 export class UtilModule implements NestModule {

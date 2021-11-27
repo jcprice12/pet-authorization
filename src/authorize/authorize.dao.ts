@@ -10,7 +10,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'winston';
+import { AtLeastOne } from '../util/app-util.types';
 import { DynamoConfig } from '../util/dynamo-config.model';
+import { DynamoUpdateService } from '../util/dynamo-update.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { PET_AUTH_DYNAMO_CONFIG_PROVIDER } from '../util/util.module';
@@ -21,7 +23,8 @@ export class AuthorizeDao {
   constructor(
     private readonly client: DynamoDBClient,
     @Inject(PET_AUTH_DYNAMO_CONFIG_PROVIDER) private readonly config: DynamoConfig,
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    private readonly updateService: DynamoUpdateService
   ) {}
 
   @LogPromise(retrieveLoggerOnClass)
@@ -50,6 +53,7 @@ export class AuthorizeDao {
     return this.mapDbItemToAuthCode(output.Item);
   }
 
+  //TODO: remove after verifying new update method works
   @LogPromise(retrieveLoggerOnClass)
   async updateConsumeFlagForAuthCode(code: string, isConsumed: boolean): Promise<void> {
     await this.client.send(
@@ -61,6 +65,20 @@ export class AuthorizeDao {
           ':isConsumed': isConsumed
         })
       })
+    );
+  }
+
+  @LogPromise(retrieveLoggerOnClass)
+  async updateAuthCode(authCode: { code: string } & AtLeastOne<Omit<AuthCode, 'code'>>): Promise<void> {
+    await this.client.send(
+      this.updateService.buildBasicUpdateCommand(
+        this.config.tableName,
+        {
+          ...this.makeUnmarshalledKeyForAuthCodeItem(authCode.code),
+          ...authCode
+        },
+        (key) => key === this.config.pkName || key === this.config.skName
+      )
     );
   }
 
