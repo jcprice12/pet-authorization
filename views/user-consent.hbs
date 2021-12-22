@@ -24,7 +24,7 @@
           scopes,
           clientId
         };
-        $.post('/user/consent', requestObj).always(function(){
+        $.post('/users/consent', requestObj).always(function(){
           window.location.replace(afterConsentGoTo);
         });
       }

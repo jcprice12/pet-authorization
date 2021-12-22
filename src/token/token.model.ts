@@ -10,7 +10,7 @@ export class ExchangeAuthCodeForTokensDto {
   code: string;
 
   @IsNotEmpty()
-  @IsUrl()
+  //@IsUrl()
   redirect_uri: string;
 
   @IsNotEmpty()

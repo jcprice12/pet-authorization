@@ -24,7 +24,7 @@
           email: document.getElementById('email').value,
           password: document.getElementById('password').value
         };
-        $.post('/user/login', requestObj).always(function(){
+        $.post('/users/login', requestObj).always(function(){
           window.location.replace(afterLoginGoTo);
         });
       }

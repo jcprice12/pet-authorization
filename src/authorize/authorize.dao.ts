@@ -1,10 +1,4 @@
-import {
-  AttributeValue,
-  DynamoDBClient,
-  GetItemCommand,
-  PutItemCommand,
-  UpdateItemCommand
-} from '@aws-sdk/client-dynamodb';
+import { AttributeValue, DynamoDBClient, GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -51,21 +45,6 @@ export class AuthorizeDao {
       })
     );
     return this.mapDbItemToAuthCode(output.Item);
-  }
-
-  //TODO: remove after verifying new update method works
-  @LogPromise(retrieveLoggerOnClass)
-  async updateConsumeFlagForAuthCode(code: string, isConsumed: boolean): Promise<void> {
-    await this.client.send(
-      new UpdateItemCommand({
-        TableName: this.config.tableName,
-        Key: this.makeKeyForAuthCodeItem(code),
-        UpdateExpression: 'set isConsumed = :isConsumed',
-        ExpressionAttributeValues: marshall({
-          ':isConsumed': isConsumed
-        })
-      })
-    );
   }
 
   @LogPromise(retrieveLoggerOnClass)

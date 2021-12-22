@@ -19,9 +19,10 @@ describe('Dynamo Update Service', () => {
     let tableName: string;
     beforeEach(() => {
       tableName = 'foo';
-      isDynamoKey = (keyName: string) => keyName === 'pk';
+      isDynamoKey = (keyName: string) => keyName === 'pk' || keyName === 'sk';
       item = {
         pk: '123',
+        sk: '321',
         myStringValue: 'john',
         myUndefinedValue: undefined,
         myFalseValue: false,
@@ -45,18 +46,28 @@ describe('Dynamo Update Service', () => {
           Key: {
             pk: {
               S: '123'
+            },
+            sk: {
+              S: '321'
             }
           },
           UpdateExpression:
             'SET #myStringValue = :myStringValue, #myFalseValue = :myFalseValue, #myObjectValue = :myObjectValue',
-          ConditionExpression: '#pk = :pk',
+          ConditionExpression: '#pk = :pk AND #sk = :sk',
           ExpressionAttributeNames: {
             '#myStringValue': 'myStringValue',
             '#myFalseValue': 'myFalseValue',
             '#pk': 'pk',
+            '#sk': 'sk',
             '#myObjectValue': 'myObjectValue'
           },
           ExpressionAttributeValues: {
+            ':pk': {
+              S: '123'
+            },
+            ':sk': {
+              S: '321'
+            },
             ':myStringValue': {
               S: 'john'
             },

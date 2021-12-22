@@ -28,9 +28,10 @@
           givenName: document.getElementById('first-name').value,
           familyName: document.getElementById('last-name').value
         }
-        $.post('/user/register', requestObj).done(function(){
-          window.location.replace('/user/login');
+        $.post('/users/register', requestObj).done(function(){
+          window.location.replace('/users/login');
         }).fail(function(e) {
+          console.log(e)
           alert('registration failed!');
         });
       }

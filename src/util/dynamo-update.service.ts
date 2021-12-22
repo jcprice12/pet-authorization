@@ -21,7 +21,7 @@ export class DynamoUpdateService {
       Key: this.buildKey(item, isDynamoKey),
       UpdateExpression: this.buildBasicUpdateExpression(item, isDynamoKey),
       ExpressionAttributeNames: this.buildExpressionAttributeNamesForBasicUpdate(item),
-      ExpressionAttributeValues: this.buildExpressionAttributeValuesForBasicUpdate(item, isDynamoKey),
+      ExpressionAttributeValues: this.buildExpressionAttributeValuesForBasicUpdate(item),
       ConditionExpression: this.buildConditionExpressionForExistingItem(item, isDynamoKey)
     });
   }
@@ -57,16 +57,12 @@ export class DynamoUpdateService {
       .reduce(this.objectReducer, {});
   }
 
-  private buildExpressionAttributeValuesForBasicUpdate(
-    item: Record<string, any>,
-    isDynamoKey: (keyName: string) => boolean
-  ): {
+  private buildExpressionAttributeValuesForBasicUpdate(item: Record<string, any>): {
     [key: string]: AttributeValue;
   } {
     return marshall(
       Object.entries(item)
         .filter(this.valueExistsPredicate)
-        .filter(([key]) => !isDynamoKey(key))
         .map(([key, value]) => ({ [`${this.valuePrefix}${key}`]: value }))
         .reduce(this.objectReducer, {}),
       {
@@ -82,7 +78,7 @@ export class DynamoUpdateService {
     return Object.entries(item)
       .filter(([key]) => isDynamoKey(key))
       .map(this.keyToNameValueStringMapper)
-      .join(' AND');
+      .join(' AND ');
   }
 
   private doesValueExist(value: unknown): boolean {
