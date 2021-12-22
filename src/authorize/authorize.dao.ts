@@ -70,12 +70,13 @@ export class AuthorizeDao {
 
   @LogPromise(retrieveLoggerOnClass)
   async updateAuthCode(authCode: { code: string } & AtLeastOne<Omit<AuthCode, 'code'>>): Promise<void> {
+    const { code, ...everythingElse } = authCode;
     await this.client.send(
       this.updateService.buildBasicUpdateCommand(
         this.config.tableName,
         {
-          ...this.makeUnmarshalledKeyForAuthCodeItem(authCode.code),
-          ...authCode
+          ...this.makeUnmarshalledKeyForAuthCodeItem(code),
+          ...everythingElse
         },
         (key) => key === this.config.pkName || key === this.config.skName
       )

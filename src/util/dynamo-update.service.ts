@@ -6,7 +6,6 @@ import { Injectable } from '@nestjs/common';
 export class DynamoUpdateService {
   private readonly namePrefix = '#';
   private readonly valuePrefix = ':';
-  private readonly keyValueMapper = ([key, value]) => ({ [key]: value });
   private readonly objectReducer = (previous, current) => ({ ...previous, ...current });
   private readonly valueExistsPredicate = ([_key, value]) => this.doesValueExist(value);
   private readonly keyToNameValueStringMapper = ([key, _value]) =>
@@ -22,7 +21,7 @@ export class DynamoUpdateService {
       Key: this.buildKey(item, isDynamoKey),
       UpdateExpression: this.buildBasicUpdateExpression(item, isDynamoKey),
       ExpressionAttributeNames: this.buildExpressionAttributeNamesForBasicUpdate(item),
-      ExpressionAttributeValues: this.buildExpressionAttributeValuesForBasicUpdate(item),
+      ExpressionAttributeValues: this.buildExpressionAttributeValuesForBasicUpdate(item, isDynamoKey),
       ConditionExpression: this.buildConditionExpressionForExistingItem(item, isDynamoKey)
     });
   }
@@ -36,18 +35,17 @@ export class DynamoUpdateService {
     return marshall(
       Object.entries(item)
         .filter(([key]) => isDynamoKey(key))
-        .map(this.keyValueMapper)
+        .map(([key, value]) => ({ [key]: value }))
         .reduce(this.objectReducer, {})
     );
   }
 
   private buildBasicUpdateExpression(item: Record<string, any>, isDynamoKey: (keyName: string) => boolean): string {
-    return `SET 
-      ${Object.entries(item)
-        .filter(this.valueExistsPredicate)
-        .filter(([key]) => !isDynamoKey(key))
-        .map(this.keyToNameValueStringMapper)
-        .join(', ')}`;
+    return `SET ${Object.entries(item)
+      .filter(this.valueExistsPredicate)
+      .filter(([key]) => !isDynamoKey(key))
+      .map(this.keyToNameValueStringMapper)
+      .join(', ')}`;
   }
 
   private buildExpressionAttributeNamesForBasicUpdate(item: Record<string, any>): {
@@ -55,15 +53,25 @@ export class DynamoUpdateService {
   } {
     return Object.entries(item)
       .filter(this.valueExistsPredicate)
-      .map(this.keyValueMapper)
+      .map(([key, _value]) => ({ [`${this.namePrefix}${key}`]: key }))
       .reduce(this.objectReducer, {});
   }
 
-  private buildExpressionAttributeValuesForBasicUpdate(item: Record<string, any>): {
+  private buildExpressionAttributeValuesForBasicUpdate(
+    item: Record<string, any>,
+    isDynamoKey: (keyName: string) => boolean
+  ): {
     [key: string]: AttributeValue;
   } {
     return marshall(
-      Object.entries(item).filter(this.valueExistsPredicate).map(this.keyValueMapper).reduce(this.objectReducer, {})
+      Object.entries(item)
+        .filter(this.valueExistsPredicate)
+        .filter(([key]) => !isDynamoKey(key))
+        .map(([key, value]) => ({ [`${this.valuePrefix}${key}`]: value }))
+        .reduce(this.objectReducer, {}),
+      {
+        removeUndefinedValues: true
+      }
     );
   }
 
