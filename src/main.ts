@@ -1,3 +1,5 @@
+import { startTracing } from './tracing'; //must be 1st import
+startTracing(); //must run before other imports
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as cookieParser from 'cookie-parser';

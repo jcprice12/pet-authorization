@@ -1,4 +1,4 @@
-import { Equals, IsNotEmpty, IsUrl } from 'class-validator';
+import { Equals, IsNotEmpty } from 'class-validator';
 import { GrantType } from './grant-type.enum';
 import { TokenType } from './token-type.enum';
 
@@ -10,7 +10,6 @@ export class ExchangeAuthCodeForTokensDto {
   code: string;
 
   @IsNotEmpty()
-  //@IsUrl()
   redirect_uri: string;
 
   @IsNotEmpty()

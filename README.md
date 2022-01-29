@@ -54,7 +54,15 @@ $ npm run test:cov
 ```
 
 ### Manual
+
 ```
 # authorize
 http://localhost:3000/authorize?response_type=code&client_id=1234&scope=openid&prompt=login&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Ffoo
+http://localhost:3000/authorize?response_type=code&client_id=1234&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Ffoo
 ```
+
+## TODO
+- validate client IDs. If invalid client ID, then do not redirect
+- validate redirect URIs. If invalid redirect URI, then do not redirect
+- pkce (state)
+- client registration (may be overkill for the purpose of this project). Dynamic client registration https://datatracker.ietf.org/doc/html/rfc7591

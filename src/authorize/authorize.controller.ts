@@ -7,6 +7,8 @@ import { LogAttributeValue } from '../util/log-attribute-value.enum';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { RequiredPipe } from '../util/required.pipe';
+import { Span } from '../util/span.decorator';
+import { retreiveAppTracer } from '../util/span.retriever';
 import { FullURL } from '../util/url.decorator';
 import { ValidEnumPipe } from '../util/valid-enum.pipe';
 import { AuthorizeService } from './authorize.service';
@@ -27,6 +29,7 @@ export class AuthorizeController {
 
   @Get()
   @Redirect()
+  @Span(retreiveAppTracer)
   @LogPromise(retrieveLoggerOnClass, {
     argMappings: [() => ({ name: 'req', value: LogAttributeValue.IGNORED })]
   })
