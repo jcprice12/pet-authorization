@@ -5,6 +5,8 @@ import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
+import { Span } from '../util/span.decorator';
+import { retreiveAppTracer } from '../util/span.retriever';
 import { AuthCodeNotFoundError } from './auth-code-not-found.error';
 import { AuthorizeDao } from './authorize.dao';
 import { AuthCode, AuthCodeBase } from './authorize.model';
@@ -22,6 +24,7 @@ export class AuthorizeService {
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
+  @Span(retreiveAppTracer)
   @LogPromise(retrieveLoggerOnClass)
   async createAuthCode(
     clientId: string,

@@ -1,3 +1,4 @@
+import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { Resource } from '@opentelemetry/resources';
 import { NodeSDK, tracing } from '@opentelemetry/sdk-node';
@@ -8,6 +9,7 @@ const sdk = new NodeSDK({
   resource: new Resource({
     [SemanticResourceAttributes.SERVICE_NAME]: 'pet-authorization'
   }),
+  contextManager: new AsyncHooksContextManager().enable(),
   instrumentations: [new HttpInstrumentation()]
 });
 

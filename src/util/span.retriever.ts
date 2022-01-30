@@ -1,3 +1,4 @@
 import { trace } from '@opentelemetry/api';
 
-export const retreiveAppTracer = () => trace.getTracer('pet-authorization-app-tracer');
+export const tracer = trace.getTracer('pet-authorization-app-tracer');
+export const retreiveAppTracer = () => tracer;
