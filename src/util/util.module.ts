@@ -1,6 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { Global, MiddlewareConsumer, Module, NestModule, Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AsyncLocalStorageMiddleware } from './async-local-storage.middleware';
 import { AsyncLocalStorageService } from './async-local-storage.service';
 import { CorrelationIdMiddleware } from './correlation-id.middleware';
 import { dynamoClientFactory } from './dynamo-client.factory';
@@ -48,6 +49,6 @@ const dynamoConfigProvider: Provider<DynamoConfig> = {
 })
 export class UtilModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+    consumer.apply(AsyncLocalStorageMiddleware, CorrelationIdMiddleware).forRoutes('*');
   }
 }
