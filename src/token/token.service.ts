@@ -42,7 +42,7 @@ export class TokenService {
       return tokens;
     } catch (e) {
       if (e instanceof InvalidAuthCodeError || e instanceof AuthCodeNotFoundError) {
-        throw new InvalidGrantError(); //TODO: "SHOULD" revoke related access tokens for already consumed auth code
+        throw new InvalidGrantError();
       }
       throw e;
     }
