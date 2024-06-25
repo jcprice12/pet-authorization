@@ -83,7 +83,10 @@ export class AuthorizeService {
     if (
       trustedAuthCode.codeChallenge &&
       (!untrustedAuthCode.codeVerifier ||
-        this.hashService.sha256(untrustedAuthCode.codeVerifier) !== trustedAuthCode.codeChallenge)
+        (trustedAuthCode.codeChallengeMethod === CodeChallengeMethod.S256 &&
+          this.hashService.sha256(untrustedAuthCode.codeVerifier) !== trustedAuthCode.codeChallenge) ||
+        (trustedAuthCode.codeChallengeMethod === CodeChallengeMethod.PLAIN &&
+          untrustedAuthCode.codeVerifier !== trustedAuthCode.codeChallenge))
     ) {
       throw new AuthCodeUntrustedError();
     }
