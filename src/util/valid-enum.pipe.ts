@@ -5,7 +5,10 @@ export interface ValidEnumOptions {
 }
 
 export class ValidEnumPipe implements PipeTransform {
-  constructor(private readonly enumSpec: any, private readonly options: ValidEnumOptions = {}) {}
+  constructor(
+    private readonly enumSpec: any,
+    private readonly options: ValidEnumOptions = {}
+  ) {}
 
   transform(value: unknown, metadata: ArgumentMetadata): unknown {
     if (this.options.isOptional && !value) {
