@@ -3,7 +3,7 @@ import { SignJWT } from 'jose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { AuthCodeNotFoundError } from '../authorize/auth-code-not-found.error';
-import { AuthCode } from '../authorize/authorize.model';
+import { AuthCode } from '../authorize/auth-code.model';
 import { AuthorizeService } from '../authorize/authorize.service';
 import { InvalidAuthCodeError } from '../authorize/invalid-auth-code.error';
 import { KEY_PAIR_SERVICE_PROVIDER } from '../keys/key-pair-service.provider';
@@ -34,7 +34,8 @@ export class TokenService {
       const authCode: AuthCode = await this.authorizeService.exchangeUntrustedAuthCodeForTrustedAuthCode({
         clientId: exchangeAuthCodeForTokenDto.client_id,
         code: exchangeAuthCodeForTokenDto.code,
-        redirectUri: exchangeAuthCodeForTokenDto.redirect_uri
+        redirectUri: exchangeAuthCodeForTokenDto.redirect_uri,
+        codeVerifier: exchangeAuthCodeForTokenDto.code_verifier
       });
       const tokens = this.createTokensForAuthCode(authCode);
       await this.authorizeService.consumeAuthCode(authCode.code);

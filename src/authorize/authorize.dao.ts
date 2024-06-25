@@ -10,7 +10,7 @@ import { DynamoUpdateService } from '../util/dynamo-update.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { PET_AUTH_DYNAMO_CONFIG_PROVIDER } from '../util/util.module';
-import { AuthCode } from './authorize.model';
+import { AuthCode } from './auth-code.model';
 
 @Injectable()
 export class AuthorizeDao {

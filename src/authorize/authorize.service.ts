@@ -3,13 +3,15 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
+import { HashService } from '../util/hash.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { Span } from '../util/span.decorator';
 import { retreiveAppTracer } from '../util/span.retriever';
 import { AuthCodeNotFoundError } from './auth-code-not-found.error';
+import { AuthCode, AuthCodeBase, UntrustedAuthCode } from './auth-code.model';
 import { AuthorizeDao } from './authorize.dao';
-import { AuthCode, AuthCodeBase } from './authorize.model';
+import { CodeChallengeMethod } from './code-challenge-method.enum';
 import { AuthCodeConsumedError, AuthCodeExpiredError, AuthCodeUntrustedError } from './invalid-auth-code.error';
 import { UserDeniedRequestError } from './user-denied-request.error';
 
@@ -21,16 +23,19 @@ export class AuthorizeService {
     private readonly authorizeDao: AuthorizeDao,
     private readonly usersService: UsersService,
     private readonly expirationService: ExpirationService,
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    private readonly hashService: HashService
   ) {}
 
   @Span(retreiveAppTracer)
   @LogPromise(retrieveLoggerOnClass)
-  async createAuthCode(
+  async attemptToCreateAuthCode(
     clientId: string,
     userId: string,
     desiredScopes: Array<string>,
-    redirectUri: string
+    redirectUri: string,
+    codeChallengeMethod: CodeChallengeMethod,
+    codeChallenge?: string
   ): Promise<AuthCode> {
     const matchingScopes = await this.usersService.getConsentedScopesByUserAndClient(userId, clientId, desiredScopes);
     if (!matchingScopes.length) {
@@ -44,7 +49,9 @@ export class AuthorizeService {
         minutes: this.minutesUntilAuthCodeExpires
       }),
       isConsumed: false,
-      redirectUri
+      redirectUri,
+      codeChallengeMethod,
+      codeChallenge
     });
   }
 
@@ -58,8 +65,9 @@ export class AuthorizeService {
   }
 
   @LogPromise(retrieveLoggerOnClass)
-  async exchangeUntrustedAuthCodeForTrustedAuthCode(untrustedAuthCode: AuthCodeBase): Promise<AuthCode> {
+  async exchangeUntrustedAuthCodeForTrustedAuthCode(untrustedAuthCode: UntrustedAuthCode): Promise<AuthCode> {
     const trustedAuthCode = await this.getAuthCode(untrustedAuthCode.code);
+    this.validateCodeVerifierMatchesCodeChallenge(untrustedAuthCode, trustedAuthCode);
     this.validateUntrustedAuthCodeMatchesTrustedAuthCode(untrustedAuthCode, trustedAuthCode);
     this.validateAuthCodeHasNotExpired(trustedAuthCode);
     this.validateAuthCodeHasNotBeenConsumed(trustedAuthCode);
@@ -69,6 +77,16 @@ export class AuthorizeService {
   @LogPromise(retrieveLoggerOnClass)
   async consumeAuthCode(code: string): Promise<void> {
     await this.authorizeDao.updateAuthCode({ code, isConsumed: true });
+  }
+
+  private validateCodeVerifierMatchesCodeChallenge(untrustedAuthCode: UntrustedAuthCode, trustedAuthCode: AuthCode) {
+    if (
+      trustedAuthCode.codeChallenge &&
+      (!untrustedAuthCode.codeVerifier ||
+        this.hashService.sha256(untrustedAuthCode.codeVerifier) !== trustedAuthCode.codeChallenge)
+    ) {
+      throw new AuthCodeUntrustedError();
+    }
   }
 
   private validateUntrustedAuthCodeMatchesTrustedAuthCode(

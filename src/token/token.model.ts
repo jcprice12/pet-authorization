@@ -1,4 +1,4 @@
-import { Equals, IsNotEmpty } from 'class-validator';
+import { Equals, IsNotEmpty, IsOptional } from 'class-validator';
 import { GrantType } from './grant-type.enum';
 import { TokenType } from './token-type.enum';
 
@@ -14,6 +14,9 @@ export class ExchangeAuthCodeForTokensDto {
 
   @IsNotEmpty()
   client_id: string;
+
+  @IsOptional()
+  code_verifier?: string;
 }
 
 export interface TokenResource {

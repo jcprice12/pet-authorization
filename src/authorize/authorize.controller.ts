@@ -12,6 +12,7 @@ import { retreiveAppTracer } from '../util/span.retriever';
 import { FullURL } from '../util/url.decorator';
 import { ValidEnumPipe } from '../util/valid-enum.pipe';
 import { AuthorizeService } from './authorize.service';
+import { CodeChallengeMethod } from './code-challenge-method.enum';
 import { ErrorCode } from './error-code.enum';
 import { Prompt } from './prompt.enum';
 import { RedirectObject } from './redirect-object.model';
@@ -40,7 +41,10 @@ export class AuthorizeController {
     @Query('client_id', RequiredPipe) clientId: string,
     @Query('scope', new ParseArrayPipe({ separator: ' ' })) scopes: Array<string>,
     @Query('redirect_uri') redirectUri?: string,
-    @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string
+    @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string,
+    @Query('code_challenge') codeChallenge?: string,
+    @Query('code_challenge_method', new ValidEnumPipe(Prompt, { isOptional: true }))
+    codeChallengeMethod: CodeChallengeMethod = CodeChallengeMethod.PLAIN
   ): Promise<RedirectObject> {
     let redirectObject: RedirectObject;
     if (prompt === Prompt.LOGIN) {
@@ -50,7 +54,14 @@ export class AuthorizeController {
         redirectObject = this.redirectService.goToConsentPage(fullUrl);
       } else {
         const user = req.user as PublicUser;
-        redirectObject = await this.authorize(redirectUri, clientId, user.id, scopes);
+        redirectObject = await this.attemptToAuthorize(
+          redirectUri,
+          clientId,
+          user.id,
+          scopes,
+          codeChallengeMethod,
+          codeChallenge
+        );
       }
     } else {
       redirectObject = this.redirectService.goToCbUrlWithError(new URL(redirectUri), ErrorCode.LOGIN_REQUIRED);
@@ -58,15 +69,24 @@ export class AuthorizeController {
     return redirectObject;
   }
 
-  private async authorize(
+  private async attemptToAuthorize(
     originalredirectUri: string,
     clientId: string,
     userId: string,
-    scopes: Array<string>
+    scopes: Array<string>,
+    codeChallengeMethod: CodeChallengeMethod,
+    codeChallenge?: string
   ): Promise<RedirectObject> {
     const newRedirectUri = new URL(originalredirectUri);
     try {
-      const authCode = await this.authorizeService.createAuthCode(clientId, userId, scopes, originalredirectUri);
+      const authCode = await this.authorizeService.attemptToCreateAuthCode(
+        clientId,
+        userId,
+        scopes,
+        originalredirectUri,
+        codeChallengeMethod,
+        codeChallenge
+      );
       return this.redirectService.goToCbUrlWithAuthCode(newRedirectUri, authCode.code);
     } catch (e) {
       return e instanceof UserDeniedRequestError
