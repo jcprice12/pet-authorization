@@ -1,15 +1,16 @@
 import { INestApplication } from '@nestjs/common';
-import * as supertest from 'supertest';
+import { Test, agent } from 'supertest';
+import TestAgent from 'supertest/lib/agent';
 
 export class World {
   public app: INestApplication;
   public server: any;
-  public superTest: supertest.Test;
-  public superAgentTests: Map<string, supertest.SuperAgentTest>;
+  public superTest: Test;
+  public superTestAgents: Map<string, TestAgent>;
   private static instance: World;
 
   private constructor() {
-    this.superAgentTests = new Map<string, supertest.SuperAgentTest>();
+    this.superTestAgents = new Map<string, TestAgent>();
   }
 
   static getInstance() {
@@ -23,9 +24,9 @@ export class World {
     World.instance = null;
   }
 
-  useSuperAgentTest(key: string): supertest.SuperAgentTest {
-    const superAgentTest = World.instance.superAgentTests.get(key) ?? supertest.agent(World.instance.server);
-    World.instance.superAgentTests.set(key, superAgentTest);
-    return superAgentTest;
+  useSuperTestAgent(key: string): TestAgent {
+    const superTestAgent = World.instance.superTestAgents.get(key) ?? agent(World.instance.server);
+    World.instance.superTestAgents.set(key, superTestAgent);
+    return superTestAgent;
   }
 }

@@ -2,22 +2,19 @@ import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { Resource } from '@opentelemetry/resources';
 import { NodeSDK, tracing } from '@opentelemetry/sdk-node';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 
 const sdk = new NodeSDK({
   traceExporter: new tracing.ConsoleSpanExporter(),
   resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: 'pet-authorization'
+    [SEMRESATTRS_SERVICE_NAME]: 'pet-authorization'
   }),
   contextManager: new AsyncHooksContextManager().enable(),
   instrumentations: [new HttpInstrumentation()]
 });
 
 export function startTracing() {
-  sdk
-    .start()
-    .then(() => console.log('Tracing initialized'))
-    .catch((error) => console.log('Error initializing tracing', error));
+  sdk.start();
 }
 
 process.on('SIGINT', () => {

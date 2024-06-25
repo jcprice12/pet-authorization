@@ -35,7 +35,7 @@ defineFeature(feature, (test) => {
 
   const givenResourceOwnerRegisters = (given, world: World = World.getInstance()) => {
     given(/^resource owner registers with email "(.+)" and password "(.+)"$/, (email, password) => {
-      return world.useSuperAgentTest(email).post('/users/register').send({
+      return world.useSuperTestAgent(email).post('/users/register').send({
         email,
         password,
         givenName: 'foo',
@@ -46,7 +46,7 @@ defineFeature(feature, (test) => {
 
   const givenResourceOwnerLogsIn = (given, world: World = World.getInstance()) => {
     given(/^resource owner logs in with email "(.+)" and password "(.+)"$/, (email, password) => {
-      return world.useSuperAgentTest(email).post('/users/login').send({
+      return world.useSuperTestAgent(email).post('/users/login').send({
         email,
         password
       });
@@ -58,7 +58,7 @@ defineFeature(feature, (test) => {
       /^resource owner with email "(.+)" consents to the following scopes for client "(.+)":$/,
       (email, clientId, scopesTable: { scope: string }[]) => {
         return world
-          .useSuperAgentTest(email)
+          .useSuperTestAgent(email)
           .post('/users/consent')
           .send({
             scopes: scopesTable.map((scopeRow) => scopeRow.scope),
@@ -73,7 +73,7 @@ defineFeature(feature, (test) => {
       /^client makes a request to the authorize endpoint with the following parameters(?::)|(?: for resource owner "(.+)":)$/,
       (agentKey: string, table: any[]) => {
         world.superTest = world
-          .useSuperAgentTest(agentKey ?? 'unauthenticated')
+          .useSuperTestAgent(agentKey ?? 'unauthenticated')
           .get('/authorize')
           .query(table[0]);
       }
