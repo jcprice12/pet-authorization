@@ -42,6 +42,7 @@ export class AuthorizeController {
     @Query('scope', new ParseArrayPipe({ separator: ' ' })) scopes: Array<string>,
     @Query('redirect_uri') redirectUri?: string,
     @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string,
+    @Query('state') state?: string,
     @Query('code_challenge') codeChallenge?: string,
     @Query('code_challenge_method', new ValidEnumPipe(Prompt, { isOptional: true }))
     codeChallengeMethod: CodeChallengeMethod = CodeChallengeMethod.PLAIN
@@ -54,44 +55,27 @@ export class AuthorizeController {
         redirectObject = this.redirectService.goToConsentPage(fullUrl);
       } else {
         const user = req.user as PublicUser;
-        redirectObject = await this.attemptToAuthorize(
-          redirectUri,
-          clientId,
-          user.id,
-          scopes,
-          codeChallengeMethod,
-          codeChallenge
-        );
+        const newRedirectUri = new URL(redirectUri);
+        try {
+          const authCode = await this.authorizeService.attemptToCreateAuthCode(
+            clientId,
+            user.id,
+            scopes,
+            redirectUri,
+            codeChallengeMethod,
+            codeChallenge
+          );
+          redirectObject = this.redirectService.goToCbUrlWithAuthCode(newRedirectUri, authCode.code, state);
+        } catch (e) {
+          redirectObject =
+            e instanceof UserDeniedRequestError
+              ? this.redirectService.goToCbUrlWithError(newRedirectUri, ErrorCode.ACCESS_DENIED)
+              : this.redirectService.goToCbUrlWithError(newRedirectUri, ErrorCode.SERVER_ERROR);
+        }
       }
     } else {
       redirectObject = this.redirectService.goToCbUrlWithError(new URL(redirectUri), ErrorCode.LOGIN_REQUIRED);
     }
     return redirectObject;
-  }
-
-  private async attemptToAuthorize(
-    originalredirectUri: string,
-    clientId: string,
-    userId: string,
-    scopes: Array<string>,
-    codeChallengeMethod: CodeChallengeMethod,
-    codeChallenge?: string
-  ): Promise<RedirectObject> {
-    const newRedirectUri = new URL(originalredirectUri);
-    try {
-      const authCode = await this.authorizeService.attemptToCreateAuthCode(
-        clientId,
-        userId,
-        scopes,
-        originalredirectUri,
-        codeChallengeMethod,
-        codeChallenge
-      );
-      return this.redirectService.goToCbUrlWithAuthCode(newRedirectUri, authCode.code);
-    } catch (e) {
-      return e instanceof UserDeniedRequestError
-        ? this.redirectService.goToCbUrlWithError(newRedirectUri, ErrorCode.ACCESS_DENIED)
-        : this.redirectService.goToCbUrlWithError(newRedirectUri, ErrorCode.SERVER_ERROR);
-    }
   }
 }

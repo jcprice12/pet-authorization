@@ -124,10 +124,12 @@ http://localhost:3000/keys
 - revoke related access tokens for already consumed auth code
 - validate client IDs. If invalid client ID, then do not redirect
 - validate redirect URIs. If invalid redirect URI, then do not redirect
-- implement state parameter
+- finish implementing state parameter (add it to error responses)
+- fix error responses for authorization endpoint. error responses should use URL fragment - not query parameter. also, validation failures should be redirected to cb 
 - verify pkce flow works
 - implement production key pair service
 - research if id token and access token should be signed with the same key
 - research way to tell consumers how to get public key to verify tokens (included in JWTs?)
 - deploy this thing
+- implement client credentials grant (may be overkill for the purpose of this project)
 - client registration (may be overkill for the purpose of this project). Dynamic client registration https://datatracker.ietf.org/doc/html/rfc7591

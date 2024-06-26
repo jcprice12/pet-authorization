@@ -9,8 +9,12 @@ export class RedirectService {
     return this.goToUrlWithParams(url, new Map([['error', errorCode]]));
   }
 
-  goToCbUrlWithAuthCode(url: URL, authCode: string): RedirectObject {
-    return this.goToUrlWithParams(url, new Map([['code', authCode]]));
+  goToCbUrlWithAuthCode(url: URL, authCode: string, state?: string): RedirectObject {
+    const params = new Map([['code', authCode]]);
+    if (state) {
+      params.set('state', state);
+    }
+    return this.goToUrlWithParams(url, params);
   }
 
   goToLoginPage(uriToGoToAfterLogin: URL): RedirectObject {
