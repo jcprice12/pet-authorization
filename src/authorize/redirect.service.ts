@@ -6,15 +6,16 @@ import { RedirectObject } from './redirect-object.model';
 @Injectable()
 export class RedirectService {
   goToCbUrlWithError(url: URL, errorCode: ErrorCode): RedirectObject {
-    return this.goToUrlWithParams(url, new Map([['error', errorCode]]));
+    url.searchParams.set('error', errorCode);
+    return this.goToUrl(url);
   }
 
   goToCbUrlWithAuthCode(url: URL, authCode: string, state?: string): RedirectObject {
-    const params = new Map([['code', authCode]]);
+    url.searchParams.set('code', authCode);
     if (state) {
-      params.set('state', state);
+      url.searchParams.set('state', state);
     }
-    return this.goToUrlWithParams(url, params);
+    return this.goToUrl(url);
   }
 
   goToLoginPage(uriToGoToAfterLogin: URL): RedirectObject {
@@ -37,12 +38,5 @@ export class RedirectService {
     return {
       url: url.toString()
     };
-  }
-
-  private goToUrlWithParams(url: URL, params: Map<string, string>): RedirectObject {
-    params.forEach((value, key) => {
-      url.searchParams.set(key, value);
-    });
-    return this.goToUrl(url);
   }
 }

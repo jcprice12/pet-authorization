@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, ParseArrayPipe, Query, Redirect, Req } from '@nestjs/common';
+import { Controller, Get, Inject, ParseArrayPipe, Query, Redirect, Req, UseFilters } from '@nestjs/common';
 import { Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -19,6 +19,7 @@ import { RedirectObject } from './redirect-object.model';
 import { RedirectService } from './redirect.service';
 import { ResponseType } from './response-type.enum';
 import { UserDeniedRequestError } from './user-denied-request.error';
+import { BadRequestExceptionFilter } from './bad-request-exception.filter';
 
 @Controller('/authorize')
 export class AuthorizeController {
@@ -29,6 +30,7 @@ export class AuthorizeController {
   ) {}
 
   @Get()
+  @UseFilters(BadRequestExceptionFilter)
   @Redirect()
   @Span(retreiveAppTracer)
   @LogPromise(retrieveLoggerOnClass, {
