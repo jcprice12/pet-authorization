@@ -124,8 +124,8 @@ http://localhost:3000/keys
 - revoke related access tokens for already consumed auth code
 - validate client IDs. If invalid client ID, then do not redirect
 - validate redirect URIs. If invalid redirect URI, then do not redirect
-- finish implementing state parameter (add it to error responses)
 - verify pkce flow works
+- verify state parm works
 - implement production key pair service
 - research if id token and access token should be signed with the same key
 - research way to tell consumers how to get public key to verify tokens (included in JWTs?)

@@ -5,17 +5,18 @@ import { RedirectObject } from './redirect-object.model';
 
 @Injectable()
 export class RedirectService {
-  goToCbUrlWithError(url: URL, errorCode: ErrorCode): RedirectObject {
-    url.searchParams.set('error', errorCode);
-    return this.goToUrl(url);
+  goToCbUrlWithError(url: URL, errorCode: ErrorCode, state?: string): RedirectObject {
+    return this.goToCbUrlWithParams(url, [
+      { name: 'error', value: errorCode },
+      { name: 'state', value: state }
+    ]);
   }
 
   goToCbUrlWithAuthCode(url: URL, authCode: string, state?: string): RedirectObject {
-    url.searchParams.set('code', authCode);
-    if (state) {
-      url.searchParams.set('state', state);
-    }
-    return this.goToUrl(url);
+    return this.goToCbUrlWithParams(url, [
+      { name: 'code', value: authCode },
+      { name: 'state', value: state }
+    ]);
   }
 
   goToLoginPage(uriToGoToAfterLogin: URL): RedirectObject {
@@ -32,6 +33,15 @@ export class RedirectService {
         uriToGoToAfterConsent.toString()
       )}`
     );
+  }
+
+  private goToCbUrlWithParams(url: URL, params: Array<{ name: string; value?: string }>): RedirectObject {
+    params.forEach((param) => {
+      if (param) {
+        url.searchParams.set(param.name, param.value);
+      }
+    });
+    return this.goToUrl(url);
   }
 
   private goToUrl(url: URL | string): RedirectObject {

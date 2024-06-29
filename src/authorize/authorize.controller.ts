@@ -71,8 +71,8 @@ export class AuthorizeController {
         } catch (e) {
           redirectObject =
             e instanceof UserDeniedRequestError
-              ? this.redirectService.goToCbUrlWithError(newRedirectUri, ErrorCode.ACCESS_DENIED)
-              : this.redirectService.goToCbUrlWithError(newRedirectUri, ErrorCode.SERVER_ERROR);
+              ? this.redirectService.goToCbUrlWithError(newRedirectUri, ErrorCode.ACCESS_DENIED, state)
+              : this.redirectService.goToCbUrlWithError(newRedirectUri, ErrorCode.SERVER_ERROR, state);
         }
       }
     } else {
