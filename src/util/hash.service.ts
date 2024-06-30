@@ -4,11 +4,10 @@ import { createHash } from 'crypto';
 
 @Injectable()
 export class HashService {
-  private readonly saltRounds = 10;
   private readonly sha256Hash = createHash('sha256');
 
-  hashWithSalt(value: string): Promise<string> {
-    return bcrypt.hash(value, this.saltRounds);
+  hashWithSalt(value: string, saltRounds = 10): Promise<string> {
+    return bcrypt.hash(value, saltRounds);
   }
 
   compare(plainText: string, hashedValue: string): Promise<boolean> {

@@ -8,6 +8,7 @@ import { KeysModule } from './keys/keys.module';
 import { TokenModule } from './token/token.module';
 import { UsersModule } from './users/users.module';
 import { UtilModule } from './util/util.module';
+import { ClientsModule } from './clients/clients.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UtilModule } from './util/util.module';
     AuthorizeModule,
     UtilModule,
     UsersModule,
+    ClientsModule,
     AuthenticationModule
   ]
 })
