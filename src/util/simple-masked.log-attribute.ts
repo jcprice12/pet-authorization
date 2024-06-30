@@ -6,7 +6,7 @@ export class MaskedSimpleObjectLogAttribute implements LogAttribute {
   public readonly value: Record<string, any>;
   constructor(
     public readonly name: string,
-    objWithFieldToMask: any,
+    objWithFieldToMask: unknown,
     fieldsToMask: Array<string>
   ) {
     this.value = cloneDeep(objWithFieldToMask);

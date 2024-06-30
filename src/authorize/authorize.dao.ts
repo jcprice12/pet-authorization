@@ -1,8 +1,7 @@
 import { AttributeValue, DynamoDBClient, GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'winston';
 import { AtLeastOne } from '../util/app-util.types';
 import { DynamoConfig } from '../util/dynamo-config.model';
@@ -22,9 +21,9 @@ export class AuthorizeDao {
   ) {}
 
   @LogPromise(retrieveLoggerOnClass)
-  async insertAuthCode(authCode: Omit<AuthCode, 'code'>): Promise<AuthCode> {
+  async insertAuthCode(authCode: AuthCode): Promise<AuthCode> {
     const authCodeItem = marshall({
-      ...this.makeUnmarshalledKeyForAuthCodeItem(),
+      ...this.makeUnmarshalledKeyForAuthCodeItem(authCode.code),
       ...authCode
     });
     await this.client.send(
@@ -33,7 +32,7 @@ export class AuthorizeDao {
         Item: authCodeItem
       })
     );
-    return this.mapDbItemToAuthCode(authCodeItem);
+    return this.mapMarshalledAuthCodeItemToAuthCode(authCodeItem);
   }
 
   @LogPromise(retrieveLoggerOnClass)
@@ -44,7 +43,10 @@ export class AuthorizeDao {
         Key: this.makeKeyForAuthCodeItem(code)
       })
     );
-    return this.mapDbItemToAuthCode(output.Item);
+    if (output.Item) {
+      return this.mapMarshalledAuthCodeItemToAuthCode(output.Item);
+    }
+    throw new NotFoundException();
   }
 
   @LogPromise(retrieveLoggerOnClass)
@@ -62,23 +64,20 @@ export class AuthorizeDao {
     );
   }
 
-  private mapDbItemToAuthCode(item: { [key: string]: AttributeValue } | undefined): AuthCode | undefined {
-    return item ? this.mapDbAuthCodeToAuthCode(unmarshall(item)) : undefined;
-  }
-
-  private mapDbAuthCodeToAuthCode(dbAuthCode): AuthCode {
-    const { [this.config.pkName]: pk, [this.config.skName]: sk, ...everythingElse } = dbAuthCode;
+  private mapMarshalledAuthCodeItemToAuthCode(item: { [key: string]: AttributeValue }): AuthCode {
+    const unmarshalledItem = unmarshall(item);
+    const { [this.config.pkName]: pk, [this.config.skName]: sk, ...everythingElse } = unmarshalledItem;
     return {
       ...everythingElse,
       code: pk.split(this.config.keyDelimiter)[1]
-    };
+    } as AuthCode;
   }
 
-  private makeAuthCodeKeyValue(code: string = uuidv4()): string {
+  private makeAuthCodeKeyValue(code: string): string {
     return `auth-code${this.config.keyDelimiter}${code}`;
   }
 
-  private makeUnmarshalledKeyForAuthCodeItem(code?: string): { [key: string]: string } {
+  private makeUnmarshalledKeyForAuthCodeItem(code: string): { [key: string]: string } {
     const authCodeKeyValue = this.makeAuthCodeKeyValue(code);
     return {
       [this.config.pkName]: authCodeKeyValue,
@@ -86,7 +85,7 @@ export class AuthorizeDao {
     };
   }
 
-  private makeKeyForAuthCodeItem(code?: string): {
+  private makeKeyForAuthCodeItem(code: string): {
     [key: string]: AttributeValue;
   } {
     return marshall(this.makeUnmarshalledKeyForAuthCodeItem(code));

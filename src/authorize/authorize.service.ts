@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'winston';
 import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
@@ -42,6 +43,7 @@ export class AuthorizeService {
       throw new UserDeniedRequestError('user has not provided consent for any desired scopes');
     }
     return this.authorizeDao.insertAuthCode({
+      code: uuidv4(),
       clientId,
       userId,
       scopes: desiredScopes,
@@ -57,11 +59,11 @@ export class AuthorizeService {
 
   @LogPromise(retrieveLoggerOnClass)
   async getAuthCode(code: string): Promise<AuthCode> {
-    const authCode: AuthCode = await this.authorizeDao.findAuthCode(code);
-    if (!authCode) {
+    try {
+      return await this.authorizeDao.findAuthCode(code);
+    } catch (e) {
       throw new AuthCodeNotFoundError();
     }
-    return authCode;
   }
 
   @LogPromise(retrieveLoggerOnClass)

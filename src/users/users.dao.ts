@@ -6,24 +6,21 @@ import {
   UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'winston';
 import { DynamoConfig } from '../util/dynamo-config.model';
-import { HashService } from '../util/hash.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
-import { MaskedUserLogAttribute } from './masked-user.log-attribute';
 import { TransactableWriteService } from '../util/transactable-write.service';
 import { PET_AUTH_DYNAMO_CONFIG_PROVIDER } from '../util/util.module';
+import { MaskedUserLogAttribute } from './masked-user.log-attribute';
 import { ClientInfoForUser, User, UserRegistrationDto } from './user.model';
 
 @Injectable()
 export class UsersDao {
   constructor(
     private readonly client: DynamoDBClient,
-    private readonly hashService: HashService,
     @Inject(PET_AUTH_DYNAMO_CONFIG_PROVIDER) private readonly config: DynamoConfig,
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     private readonly transactableWriteService: TransactableWriteService
@@ -43,7 +40,10 @@ export class UsersDao {
         KeyConditionExpression: 'email = :email'
       })
     );
-    return this.mapDbItemToUser(output.Items[0]);
+    if (output.Count) {
+      return this.mapMarshalledUserItemToUser(output.Items[0]);
+    }
+    throw new NotFoundException();
   }
 
   @LogPromise(retrieveLoggerOnClass, {
@@ -60,19 +60,21 @@ export class UsersDao {
         })
       })
     );
-    return this.mapDbItemToUser(output.Item);
+    if (output.Item) {
+      return this.mapMarshalledUserItemToUser(output.Item);
+    }
+    throw new NotFoundException();
   }
 
   @LogPromise(retrieveLoggerOnClass, {
     argMappings: [(arg: UserRegistrationDto) => new MaskedUserLogAttribute('arg1', arg)],
     resultMapping: (result: User) => new MaskedUserLogAttribute('result', result)
   })
-  async insertUser(userDto: UserRegistrationDto): Promise<User> {
-    const userKeyVal = `user${this.config.keyDelimiter}${uuidv4()}`;
-    const emailKeyVal = `user-email${this.config.keyDelimiter}${userDto.email}`;
+  async insertUser(user: User): Promise<User> {
+    const userKeyVal = `user${this.config.keyDelimiter}${user.id}`;
+    const emailKeyVal = `user-email${this.config.keyDelimiter}${user.email}`;
     const userItem = marshall({
-      ...userDto,
-      password: await this.hashService.hashWithSalt(userDto.password),
+      ...user,
       [this.config.pkName]: userKeyVal,
       [this.config.skName]: userKeyVal
     });
@@ -91,7 +93,7 @@ export class UsersDao {
         })
       }
     ]);
-    return this.mapDbItemToUser(userItem);
+    return this.mapMarshalledUserItemToUser(userItem);
   }
 
   @LogPromise(retrieveLoggerOnClass)
@@ -105,7 +107,10 @@ export class UsersDao {
         })
       })
     );
-    return this.mapDbItemToClientInfo(output.Item);
+    if (output.Item) {
+      return this.mapMarshalledClientInfoForUserToClientInfoForUser(output.Item);
+    }
+    throw new NotFoundException();
   }
 
   @LogPromise(retrieveLoggerOnClass)
@@ -129,24 +134,20 @@ export class UsersDao {
     );
   }
 
-  private mapDbItemToUser(item: { [key: string]: AttributeValue } | undefined): User | undefined {
-    return item ? this.mapDbUserToUser(unmarshall(item)) : undefined;
-  }
-
-  private mapDbUserToUser(dbUser): User {
-    const { [this.config.pkName]: pk, [this.config.skName]: sk, ...everythingElse } = dbUser;
+  private mapMarshalledUserItemToUser(item: { [key: string]: AttributeValue }): User {
+    const unmarshalledItem = unmarshall(item);
+    const { [this.config.pkName]: pk, [this.config.skName]: sk, ...everythingElse } = unmarshalledItem;
     return {
       ...everythingElse,
       id: pk.split(this.config.keyDelimiter)[1]
-    };
+    } as User;
   }
 
-  private mapDbItemToClientInfo(item: { [key: string]: AttributeValue } | undefined): ClientInfoForUser | undefined {
-    return item ? this.mapDbClientInfoForUserToClientInfoForUser(unmarshall(item)) : undefined;
-  }
-
-  private mapDbClientInfoForUserToClientInfoForUser(dbClientInfoForUser): ClientInfoForUser {
-    const { [this.config.pkName]: pk, [this.config.skName]: sk, scopes } = dbClientInfoForUser;
+  private mapMarshalledClientInfoForUserToClientInfoForUser(item: {
+    [key: string]: AttributeValue;
+  }): ClientInfoForUser {
+    const unmarshalledItem = unmarshall(item);
+    const { [this.config.pkName]: pk, [this.config.skName]: sk, scopes } = unmarshalledItem;
     return {
       userId: pk.split(this.config.keyDelimiter)[1],
       clientId: sk.split(this.config.keyDelimiter)[1],
