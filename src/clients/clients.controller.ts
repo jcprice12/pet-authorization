@@ -1,4 +1,4 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Inject, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { LogAttributeValue } from '../util/log-attribute-value.enum';
@@ -17,6 +17,7 @@ export class ClientsController {
   ) {}
 
   @Post()
+  @UsePipes(new ValidationPipe({ transform: true }))
   @Span(retreiveAppTracer)
   @LogPromise(retrieveLoggerOnClass, {
     argMappings: [() => ({ name: 'req', value: LogAttributeValue.IGNORED })]

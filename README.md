@@ -129,6 +129,4 @@ http://localhost:3000/keys
 - implement production key pair service
 - research if id token and access token should be signed with the same key
 - research way to tell consumers how to get public key to verify tokens (included in JWTs?)
-- deploy this thing
-- implement client credentials grant (may be overkill for the purpose of this project)
-- client registration (may be overkill for the purpose of this project). Dynamic client registration https://datatracker.ietf.org/doc/html/rfc7591
+- client registration. Dynamic client registration https://datatracker.ietf.org/doc/html/rfc7591
