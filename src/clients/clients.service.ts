@@ -24,4 +24,9 @@ export class ClientsService {
     };
     return this.clientsDao.insertClient(client);
   }
+
+  @LogPromise(retrieveLoggerOnClass)
+  async getClient(clientId: string): Promise<Client> {
+    return this.clientsDao.findClient(clientId);
+  }
 }
