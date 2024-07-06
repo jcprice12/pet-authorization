@@ -37,7 +37,7 @@ export class RedirectService {
 
   private goToCbUrlWithParams(url: URL, params: Array<{ name: string; value?: string }>): RedirectObject {
     params.forEach((param) => {
-      if (param) {
+      if (param.value) {
         url.searchParams.set(param.name, param.value);
       }
     });

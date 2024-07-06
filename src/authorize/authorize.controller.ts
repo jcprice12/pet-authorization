@@ -11,15 +11,14 @@ import { Span } from '../util/span.decorator';
 import { retreiveAppTracer } from '../util/span.retriever';
 import { FullURL } from '../util/url.decorator';
 import { ValidEnumPipe } from '../util/valid-enum.pipe';
+import { AuthorizationRequestExceptionFilter } from './authorization-request-exception.filter';
 import { AuthorizeService } from './authorize.service';
 import { CodeChallengeMethod } from './code-challenge-method.enum';
-import { ErrorCode } from './error-code.enum';
+import { LoginRequiredError } from './login-required.error';
 import { Prompt } from './prompt.enum';
 import { RedirectObject } from './redirect-object.model';
 import { RedirectService } from './redirect.service';
 import { ResponseType } from './response-type.enum';
-import { UserDeniedRequestError } from './user-denied-request.error';
-import { BadRequestExceptionFilter } from './bad-request-exception.filter';
 
 @Controller('/authorize')
 export class AuthorizeController {
@@ -30,7 +29,7 @@ export class AuthorizeController {
   ) {}
 
   @Get()
-  @UseFilters(BadRequestExceptionFilter)
+  @UseFilters(AuthorizationRequestExceptionFilter)
   @Redirect()
   @Span(retreiveAppTracer)
   @LogPromise(retrieveLoggerOnClass, {
@@ -57,26 +56,19 @@ export class AuthorizeController {
         redirectObject = this.redirectService.goToConsentPage(fullUrl);
       } else {
         const user = req.user as PublicUser;
-        const newRedirectUri = new URL(redirectUri);
-        try {
-          const authCode = await this.authorizeService.attemptToCreateAuthCode(
-            clientId,
-            user.id,
-            scopes,
-            redirectUri,
-            codeChallengeMethod,
-            codeChallenge
-          );
-          redirectObject = this.redirectService.goToCbUrlWithAuthCode(newRedirectUri, authCode.code, state);
-        } catch (e) {
-          redirectObject =
-            e instanceof UserDeniedRequestError
-              ? this.redirectService.goToCbUrlWithError(newRedirectUri, ErrorCode.ACCESS_DENIED, state)
-              : this.redirectService.goToCbUrlWithError(newRedirectUri, ErrorCode.SERVER_ERROR, state);
-        }
+        const cb = new URL(redirectUri);
+        const authCode = await this.authorizeService.attemptToCreateAuthCode(
+          clientId,
+          user.id,
+          scopes,
+          redirectUri,
+          codeChallengeMethod,
+          codeChallenge
+        );
+        redirectObject = this.redirectService.goToCbUrlWithAuthCode(cb, authCode.code, state);
       }
     } else {
-      redirectObject = this.redirectService.goToCbUrlWithError(new URL(redirectUri), ErrorCode.LOGIN_REQUIRED);
+      throw new LoginRequiredError();
     }
     return redirectObject;
   }

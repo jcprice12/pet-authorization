@@ -1,8 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { SignJWT } from 'jose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { AuthCodeNotFoundError } from '../authorize/auth-code-not-found.error';
 import { AuthCode } from '../authorize/auth-code.model';
 import { AuthorizeService } from '../authorize/authorize.service';
 import { InvalidAuthCodeError } from '../authorize/invalid-auth-code.error';
@@ -41,7 +40,7 @@ export class TokenService {
       await this.authorizeService.consumeAuthCode(authCode.code);
       return tokens;
     } catch (e) {
-      if (e instanceof InvalidAuthCodeError || e instanceof AuthCodeNotFoundError) {
+      if (e instanceof InvalidAuthCodeError || e instanceof NotFoundException) {
         throw new InvalidGrantError();
       }
       throw e;

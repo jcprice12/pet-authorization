@@ -9,7 +9,6 @@ import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { Span } from '../util/span.decorator';
 import { retreiveAppTracer } from '../util/span.retriever';
-import { AuthCodeNotFoundError } from './auth-code-not-found.error';
 import { AuthCode, AuthCodeBase, UntrustedAuthCode } from './auth-code.model';
 import { AuthorizeDao } from './authorize.dao';
 import { CodeChallengeMethod } from './code-challenge-method.enum';
@@ -58,12 +57,8 @@ export class AuthorizeService {
   }
 
   @LogPromise(retrieveLoggerOnClass)
-  async getAuthCode(code: string): Promise<AuthCode> {
-    try {
-      return await this.authorizeDao.findAuthCode(code);
-    } catch (e) {
-      throw new AuthCodeNotFoundError();
-    }
+  getAuthCode(code: string): Promise<AuthCode> {
+    return this.authorizeDao.findAuthCode(code);
   }
 
   @LogPromise(retrieveLoggerOnClass)
