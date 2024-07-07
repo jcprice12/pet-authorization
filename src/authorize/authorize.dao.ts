@@ -22,10 +22,16 @@ export class AuthorizeDao {
 
   @LogPromise(retrieveLoggerOnClass)
   async insertAuthCode(authCode: AuthCode): Promise<AuthCode> {
-    const authCodeItem = marshall({
-      ...this.makeUnmarshalledKeyForAuthCodeItem(authCode.code),
-      ...authCode
-    });
+    console.log(authCode);
+    const authCodeItem = marshall(
+      {
+        ...this.makeUnmarshalledKeyForAuthCodeItem(authCode.code),
+        ...authCode
+      },
+      {
+        removeUndefinedValues: true
+      }
+    );
     await this.client.send(
       new PutItemCommand({
         TableName: this.config.tableName,

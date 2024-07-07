@@ -1,4 +1,14 @@
-import { Controller, Get, Inject, ParseArrayPipe, Query, Redirect, Req, UseFilters } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Inject,
+  ParseArrayPipe,
+  Query,
+  Redirect,
+  Req,
+  UseFilters,
+  UseInterceptors
+} from '@nestjs/common';
 import { Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -6,17 +16,18 @@ import { PublicUser } from '../users/user.model';
 import { LogAttributeValue } from '../util/log-attribute-value.enum';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
-import { RequiredPipe } from '../util/required.pipe';
 import { Span } from '../util/span.decorator';
 import { retreiveAppTracer } from '../util/span.retriever';
 import { FullURL } from '../util/url.decorator';
 import { ValidEnumPipe } from '../util/valid-enum.pipe';
 import { AuthorizationRequestExceptionFilter } from './authorization-request-exception.filter';
 import { AuthorizeService } from './authorize.service';
+import { ClientInterceptor } from './client.interceptor';
 import { CodeChallengeMethod } from './code-challenge-method.enum';
 import { LoginRequiredError } from './login-required.error';
 import { Prompt } from './prompt.enum';
 import { RedirectObject } from './redirect-object.model';
+import { RedirectUriPipe } from './redirect-uri.pipe';
 import { RedirectService } from './redirect.service';
 import { ResponseType } from './response-type.enum';
 
@@ -30,6 +41,7 @@ export class AuthorizeController {
 
   @Get()
   @UseFilters(AuthorizationRequestExceptionFilter)
+  @UseInterceptors(ClientInterceptor) // interceptor errors are caught by filter (as opposed to middleware errors)
   @Redirect()
   @Span(retreiveAppTracer)
   @LogPromise(retrieveLoggerOnClass, {
@@ -38,10 +50,10 @@ export class AuthorizeController {
   async handleAuthorizeRequest(
     @Req() req: Request,
     @FullURL() fullUrl: URL,
+    @Query('client_id') clientId: string, // no pipe needed because interceptor checks for validity
+    @Query('redirect_uri', RedirectUriPipe) redirectUri: string, // param pipes are all run at once, so interceptor needed to set client on request
     @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
-    @Query('client_id', RequiredPipe) clientId: string,
     @Query('scope', new ParseArrayPipe({ separator: ' ' })) scopes: Array<string>,
-    @Query('redirect_uri') redirectUri?: string,
     @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string,
     @Query('state') state?: string,
     @Query('code_challenge') codeChallenge?: string,

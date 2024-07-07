@@ -63,8 +63,12 @@ $ npm run test:cov
 Note, the following requests will redirect you to an address that doesn't exist. That's fine (at least until I implement redirect URI verification), you just need to verify that you are redirected with an authorization code. Use the authorization code in a POST request to the /token endpoint to exchange it for your OAuth tokens.
 
 ```
-http://localhost:3000/authorize?response_type=code&client_id=1234&scope=openid&prompt=login&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Ffoo
-http://localhost:3000/authorize?response_type=code&client_id=1234&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Ffoo
+// login
+http://localhost:3000/authorize?response_type=code&client_id=7f3a379f-cf21-4231-9c6f-227471202fd4&scope=openid&redirect_uri=https%3A%2F%2Flocalhost%3A3000%2Fcallback&prompt=login
+// consent
+http://localhost:3000/authorize?response_type=code&client_id=7f3a379f-cf21-4231-9c6f-227471202fd4&scope=openid&redirect_uri=https%3A%2F%2Flocalhost%3A3000%2Fcallback&prompt=consent
+// get auth code
+http://localhost:3000/authorize?response_type=code&client_id=7f3a379f-cf21-4231-9c6f-227471202fd4&scope=openid&redirect_uri=https%3A%2F%2Flocalhost%3A3000%2Fcallback&prompt=none
 ```
 
 #### Token
@@ -122,11 +126,7 @@ http://localhost:3000/keys
 
 ## TODO
 - revoke related access tokens for already consumed auth code
-- validate client IDs. If invalid client ID, then do not redirect
-- validate redirect URIs. If invalid redirect URI, then do not redirect
 - verify pkce flow works
-- verify state parm works
+- verify state param works
 - implement production key pair service
-- research if id token and access token should be signed with the same key
 - research way to tell consumers how to get public key to verify tokens (included in JWTs?)
-- client registration. Dynamic client registration https://datatracker.ietf.org/doc/html/rfc7591
