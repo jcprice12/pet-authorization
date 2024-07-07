@@ -22,12 +22,11 @@ import { FullURL } from '../util/url.decorator';
 import { ValidEnumPipe } from '../util/valid-enum.pipe';
 import { AuthorizationRequestExceptionFilter } from './authorization-request-exception.filter';
 import { AuthorizeService } from './authorize.service';
-import { ClientInterceptor } from './client.interceptor';
 import { CodeChallengeMethod } from './code-challenge-method.enum';
 import { LoginRequiredError } from './login-required.error';
 import { Prompt } from './prompt.enum';
 import { RedirectObject } from './redirect-object.model';
-import { RedirectUriPipe } from './redirect-uri.pipe';
+import { RedirectValidationInterceptor } from './redirect-validation.interceptor';
 import { RedirectService } from './redirect.service';
 import { ResponseType } from './response-type.enum';
 
@@ -41,7 +40,7 @@ export class AuthorizeController {
 
   @Get()
   @UseFilters(AuthorizationRequestExceptionFilter)
-  @UseInterceptors(ClientInterceptor) // interceptor errors are caught by filter (as opposed to middleware errors)
+  @UseInterceptors(RedirectValidationInterceptor) // client_id and redirect_uri validation occurs here because they must be validated first
   @Redirect()
   @Span(retreiveAppTracer)
   @LogPromise(retrieveLoggerOnClass, {
@@ -51,7 +50,7 @@ export class AuthorizeController {
     @Req() req: Request,
     @FullURL() fullUrl: URL,
     @Query('client_id') clientId: string, // no pipe needed because interceptor checks for validity
-    @Query('redirect_uri', RedirectUriPipe) redirectUri: string, // param pipes are all run at once, so interceptor needed to set client on request
+    @Query('redirect_uri') redirectUri: string, // no pipe needed because interceptor checks for validity and will always set the query param if valid
     @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
     @Query('scope', new ParseArrayPipe({ separator: ' ' })) scopes: Array<string>,
     @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string,

@@ -60,20 +60,22 @@ $ npm run test:cov
 ### Manual
 
 #### Authorize
-Note, the following requests will redirect you to an address that doesn't exist. That's fine (at least until I implement redirect URI verification), you just need to verify that you are redirected with an authorization code. Use the authorization code in a POST request to the /token endpoint to exchange it for your OAuth tokens.
+Note, the following requests will redirect you to an address that doesn't exist. That's intentional since I don't have an actual OAuth client to redirect to.
 
 ```
 // login
-http://localhost:3000/authorize?response_type=code&client_id=7f3a379f-cf21-4231-9c6f-227471202fd4&scope=openid&redirect_uri=https%3A%2F%2Flocalhost%3A3000%2Fcallback&prompt=login
+GET http://localhost:3000/authorize?response_type=code&client_id=2a9da901-facc-4a83-a734-7a7b7cfa1839&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=login
+
 // consent
-http://localhost:3000/authorize?response_type=code&client_id=7f3a379f-cf21-4231-9c6f-227471202fd4&scope=openid&redirect_uri=https%3A%2F%2Flocalhost%3A3000%2Fcallback&prompt=consent
+GET http://localhost:3000/authorize?response_type=code&client_id=2a9da901-facc-4a83-a734-7a7b7cfa1839&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=consent
+
 // get auth code
-http://localhost:3000/authorize?response_type=code&client_id=7f3a379f-cf21-4231-9c6f-227471202fd4&scope=openid&redirect_uri=https%3A%2F%2Flocalhost%3A3000%2Fcallback&prompt=none
+GET http://localhost:3000/authorize?response_type=code&client_id=2a9da901-facc-4a83-a734-7a7b7cfa1839&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=none
 ```
 
 #### Token
 ```
-http://localhost:3000/token
+POST http://localhost:3000/token
 
 // request body
 {
@@ -121,7 +123,7 @@ http://localhost:3000/token
 
 #### Keys
 ```
-http://localhost:3000/keys
+GET http://localhost:3000/keys
 ```
 
 ## TODO
