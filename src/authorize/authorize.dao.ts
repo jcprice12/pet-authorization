@@ -22,7 +22,6 @@ export class AuthorizeDao {
 
   @LogPromise(retrieveLoggerOnClass)
   async insertAuthCode(authCode: AuthCode): Promise<AuthCode> {
-    console.log(authCode);
     const authCodeItem = marshall(
       {
         ...this.makeUnmarshalledKeyForAuthCodeItem(authCode.code),

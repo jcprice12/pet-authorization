@@ -9,8 +9,6 @@ export class RedirectUriPipe implements PipeTransform {
   constructor(@Inject(REQUEST) private readonly req: Request & { oAuthClient: Client }) {}
 
   transform(redirect_uri: string | undefined, _metadata: ArgumentMetadata): string {
-    console.log(redirect_uri);
-    console.log(this.req.oAuthClient.redirect_uris);
     if (redirect_uri && this.req.oAuthClient.redirect_uris.includes(redirect_uri)) {
       return redirect_uri;
     } else if (!redirect_uri) {

@@ -1,6 +1,9 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { marshall } from '@aws-sdk/util-dynamodb';
 import { INestApplication } from '@nestjs/common';
 import { defineFeature, loadFeature } from 'jest-cucumber';
+import { DateTime } from 'luxon';
+import { TokenEndpointAuthMethod } from '../../src/clients/token-endpoint-auth-method.enum';
 import { createApp } from './shared/app-setup';
 import { World } from './shared/world';
 
@@ -32,6 +35,26 @@ defineFeature(feature, (test) => {
   afterAll(() => {
     app.get(DynamoDBClient).destroy(); //dynalite hangs if you don't do this
   });
+
+  const givenClientWithIdAndRedirectUri = (given) => {
+    given(/^client with ID "(.+)" and redirect URI "(.+)"$/, async (client_id, redirectUri) => {
+      const dynamoClient = app.get(DynamoDBClient);
+      await dynamoClient.send(
+        new PutItemCommand({
+          TableName: 'PetAuth',
+          Item: marshall({
+            pk: `client#${client_id}`,
+            sk: `client#${client_id}`,
+            client_id,
+            client_id_issued_at: DateTime.utc().toISO(),
+            redirect_uris: [redirectUri],
+            client_name: 'Test Client',
+            token_endpoint_auth_method: TokenEndpointAuthMethod.NONE
+          })
+        })
+      );
+    });
+  };
 
   const givenResourceOwnerRegisters = (given, world: World = World.getInstance()) => {
     given(/^resource owner registers with email "(.+)" and password "(.+)"$/, (email, password) => {
@@ -112,17 +135,20 @@ defineFeature(feature, (test) => {
     );
   };
 
-  test('Unauthenticated request leads to redirect with error', ({ when, then }) => {
+  test('Unauthenticated request leads to redirect with error', ({ given, when, then }) => {
+    givenClientWithIdAndRedirectUri(given);
     whenAuthorizeRequestMade(when);
     thenRedirectMadeWithFollowingParams(then);
   });
 
   test('Request with login prompt leads to redirect to login page', ({ given, when, then }) => {
+    givenClientWithIdAndRedirectUri(given);
     whenAuthorizeRequestMade(when);
     thenRedirectMadeWithFollowingParams(then);
   });
 
   test('Authenticated request for scope not consented to leads to redirect with error', ({ given, when, then }) => {
+    givenClientWithIdAndRedirectUri(given);
     givenResourceOwnerRegisters(given);
     givenResourceOwnerLogsIn(given);
     whenAuthorizeRequestMade(when);
@@ -130,6 +156,7 @@ defineFeature(feature, (test) => {
   });
 
   test('Authenticated request with consent prompt leads to redirect to consent page', ({ given, when, then }) => {
+    givenClientWithIdAndRedirectUri(given);
     givenResourceOwnerRegisters(given);
     givenResourceOwnerLogsIn(given);
     whenAuthorizeRequestMade(when);
@@ -137,6 +164,7 @@ defineFeature(feature, (test) => {
   });
 
   test('Authenticated request for consented scopes leads to redirect with auth code', ({ given, when, then }) => {
+    givenClientWithIdAndRedirectUri(given);
     givenResourceOwnerRegisters(given);
     givenResourceOwnerLogsIn(given);
     givenResourceOwnerConsentsTo(given);

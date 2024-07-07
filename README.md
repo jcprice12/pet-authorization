@@ -126,6 +126,7 @@ http://localhost:3000/keys
 
 ## TODO
 - revoke related access tokens for already consumed auth code
+- fix e2e tests
 - verify pkce flow works
 - verify state param works
 - implement production key pair service
