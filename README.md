@@ -127,8 +127,7 @@ GET http://localhost:3000/keys
 ```
 
 ## TODO
-- revoke related access tokens for already consumed auth code
-- fix e2e tests
+- require matching redirect uri for access token request if redirect uri was provided in authorization request
 - verify pkce flow works
 - verify state param works
 - implement production key pair service

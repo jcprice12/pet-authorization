@@ -40,6 +40,7 @@ export class TokenService {
       await this.authorizeService.consumeAuthCode(authCode.code);
       return tokens;
     } catch (e) {
+      // note: because I am implementing tokens as JWT's and not saving them in DB for lookup later, I cannot revoke them for invalid auth code
       if (e instanceof InvalidAuthCodeError || e instanceof NotFoundException) {
         throw new InvalidGrantError();
       }
