@@ -127,6 +127,10 @@ GET http://localhost:3000/keys
 ```
 
 ## TODO
+- define scopes for the authorization server (openid, profile, email, jcpets.roles)
+- implement allowed scopes for clients (all clients should have access to default scopes)
+- make scope optional for authorize request, default to openid, profile, email, and jcpets.roles
+- create "metadata" endpoint for authorization server: https://developer.okta.com/docs/reference/api/oidc/#well-known-oauth-authorization-server.
 - require matching redirect uri for access token request if redirect uri was provided in authorization request
 - verify pkce flow works
 - verify state param works
