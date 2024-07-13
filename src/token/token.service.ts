@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { SignJWT } from 'jose';
+import { JWTPayload, SignJWT } from 'jose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { AuthCode } from '../authorize/auth-code.model';
@@ -8,13 +8,16 @@ import { InvalidAuthCodeError } from '../authorize/invalid-auth-code.error';
 import { KEY_PAIR_SERVICE_PROVIDER } from '../keys/key-pair-service.provider';
 import { KeyPair } from '../keys/key-pair.model';
 import { KeyPairService } from '../keys/key-pair.service';
+import { ScopeMetadataService } from '../server-metadata/scope-metadata.service';
+import { Scope } from '../server-metadata/scope.enum';
+import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { InvalidGrantError } from './invalid-grant.error';
+import { OpenIdClaims } from './open-id-claims.model';
 import { TokenType } from './token-type.enum';
 import { ExchangeAuthCodeForTokensDto, TokenResource } from './token.model';
-import { ScopeMetadataService } from '../server-metadata/scope-metadata.service';
 
 @Injectable()
 export class TokenService {
@@ -26,7 +29,8 @@ export class TokenService {
     private readonly expirationService: ExpirationService,
     @Inject(KEY_PAIR_SERVICE_PROVIDER) private readonly keyPairService: KeyPairService,
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-    private readonly scopeMetadataService: ScopeMetadataService
+    private readonly scopeMetadataService: ScopeMetadataService,
+    private readonly usersService: UsersService
   ) {}
 
   @LogPromise(retrieveLoggerOnClass)
@@ -65,7 +69,19 @@ export class TokenService {
   }
 
   private async createSignedIdTokenJwt(authCode: AuthCode, keyPair: KeyPair): Promise<string> {
-    return new SignJWT({})
+    const user = await this.usersService.getPublicUserById(authCode.userId);
+    const openIdClaims: OpenIdClaims = {
+      given_name: user.givenName,
+      family_name: user.familyName,
+      jcpets: {}
+    };
+    if (authCode.scopes.includes(Scope.EMAIL)) {
+      openIdClaims.email = user.email;
+    }
+    if (authCode.scopes.includes(Scope.JCPETS_ROLES)) {
+      openIdClaims.jcpets.roles = [];
+    }
+    return new SignJWT(openIdClaims as unknown as JWTPayload)
       .setProtectedHeader({ alg: keyPair.alg })
       .setIssuedAt()
       .setSubject(authCode.userId)

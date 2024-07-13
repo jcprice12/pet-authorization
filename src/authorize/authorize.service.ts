@@ -97,8 +97,8 @@ export class AuthorizeService {
     trustedAuthCode: AuthCode
   ): void {
     if (
-      untrustedAuthCode.clientId === trustedAuthCode.clientId &&
-      untrustedAuthCode.redirectUri === trustedAuthCode.redirectUri
+      untrustedAuthCode.clientId !== trustedAuthCode.clientId ||
+      untrustedAuthCode.redirectUri !== trustedAuthCode.redirectUri
     ) {
       throw new AuthCodeUntrustedError();
     }

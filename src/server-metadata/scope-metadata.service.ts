@@ -1,29 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ScopeMetadata } from './scope-metadata.model';
+import { ScopeDescriptions } from './scope.enum';
 
 @Injectable()
 export class ScopeMetadataService {
   public readonly namespace = 'jcpets';
 
   getAllSupportedScopesMetadata(): Array<ScopeMetadata> {
-    return [
-      {
-        name: 'openid',
-        description: 'Your ID'
-      },
-      {
-        name: 'profile',
-        description: 'Your profile information'
-      },
-      {
-        name: 'email',
-        description: 'Your email'
-      },
-      {
-        name: `${this.namespace}.roles`,
-        description: 'Whatever roles you may have'
-      }
-    ];
+    return Object.entries(ScopeDescriptions).map(([key, value]) => ({ name: key, description: value }));
   }
 
   getScopeMetadataFor(scopes: Array<string>): Array<ScopeMetadata> {
