@@ -9,23 +9,34 @@
     ></script>
   </head>
   <body>
+    <h1>Provide consent</h1>
+    <p>This app would like access to the following</p>
     <form>
-      <input type='hidden' id='scopes' value='{{scopes}}'/>
-      <input type='hidden' id='clientId' value='{{clientId}}'/>
-      <input type='hidden' id='afterConsentGoTo' value='{{afterConsentGoTo}}'/>
+      <input type='hidden' id='client_id' value='{{clientId}}'/>
+      <input type='hidden' id='after_consent_goto' value='{{afterConsentGoTo}}'/>
+      {{#each desiredScopesMetadata}}
+        <input type="checkbox" class="desired_scope" id="{{this.name}}" name="{{this.name}}" value="{{this.name}}">
+        <label for="{{this.name}}">{{this.description}}</label><br>
+      {{/each}}
       <input type='button' value='Consent' onclick='consent()'/>
     </form>
     <script>
-      function consent(){ 
-        var afterConsentGoTo = document.getElementById('afterConsentGoTo').value;
-        var scopes = document.getElementById('scopes').value;
-        var clientId = document.getElementById('clientId').value;
+      function consent(){
+        var afterConsentGoTo = document.getElementById('after_consent_goto').value;
+        var clientId = document.getElementById('client_id').value;
+        var checkedBoxes = document.querySelectorAll('input[class=desired_scope]:checked');
+        var desiredScopes = []
+        checkedBoxes.forEach(function(checkedBox){
+          desiredScopes.push(checkedBox.value)
+        })
         var requestObj = {
-          scopes,
+          scopes: desiredScopes,
           clientId
         };
-        $.post('/users/consent', requestObj).always(function(){
+        $.post('/users/consent', requestObj).done(function(){
           window.location.replace(afterConsentGoTo);
+        }).fail(function() {
+          alert('Could not update your consent preferences')
         });
       }
     </script>

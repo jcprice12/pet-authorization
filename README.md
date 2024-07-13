@@ -64,13 +64,13 @@ Note, the following requests will redirect you to an address that doesn't exist.
 
 ```
 // login
-GET http://localhost:3000/authorize?response_type=code&client_id=2a9da901-facc-4a83-a734-7a7b7cfa1839&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=login
+GET http://localhost:3000/authorize?response_type=code&client_id=2a9da901-facc-4a83-a734-7a7b7cfa1839&scope=openid%20profile&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=login
 
 // consent
-GET http://localhost:3000/authorize?response_type=code&client_id=2a9da901-facc-4a83-a734-7a7b7cfa1839&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=consent
+GET http://localhost:3000/authorize?response_type=code&client_id=2a9da901-facc-4a83-a734-7a7b7cfa1839&scope=openid%20profile&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=consent
 
 // get auth code
-GET http://localhost:3000/authorize?response_type=code&client_id=2a9da901-facc-4a83-a734-7a7b7cfa1839&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=none
+GET http://localhost:3000/authorize?response_type=code&client_id=2a9da901-facc-4a83-a734-7a7b7cfa1839&scope=openid%20profile&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=none
 ```
 
 #### Token
@@ -127,10 +127,6 @@ GET http://localhost:3000/keys
 ```
 
 ## TODO
-- define scopes for the authorization server (openid, profile, email, jcpets.roles)
-- implement allowed scopes for clients (all clients should have access to default scopes)
-- make scope optional for authorize request, default to openid, profile, email, and jcpets.roles
-- create "metadata" endpoint for authorization server: https://developer.okta.com/docs/reference/api/oidc/#well-known-oauth-authorization-server.
 - require matching redirect uri for access token request if redirect uri was provided in authorization request
 - verify pkce flow works
 - verify state param works

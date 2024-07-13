@@ -14,6 +14,7 @@ import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { InvalidGrantError } from './invalid-grant.error';
 import { TokenType } from './token-type.enum';
 import { ExchangeAuthCodeForTokensDto, TokenResource } from './token.model';
+import { ScopeMetadataService } from '../server-metadata/scope-metadata.service';
 
 @Injectable()
 export class TokenService {
@@ -24,7 +25,8 @@ export class TokenService {
     private readonly authorizeService: AuthorizeService,
     private readonly expirationService: ExpirationService,
     @Inject(KEY_PAIR_SERVICE_PROVIDER) private readonly keyPairService: KeyPairService,
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    private readonly scopeMetadataService: ScopeMetadataService
   ) {}
 
   @LogPromise(retrieveLoggerOnClass)
@@ -52,7 +54,7 @@ export class TokenService {
     const keyPair = await this.keyPairService.getKeyPair();
     const tokenResponse: TokenResource = {
       access_token: await this.createSignedAccessTokenJwt(authCode, keyPair),
-      scope: this.mapScopesToString(authCode.scopes),
+      scope: this.scopeMetadataService.mapScopesToString(authCode.scopes),
       expires_in: this.accessTokenExpirationTimeInSeconds,
       token_type: TokenType.BEARER
     };
@@ -77,7 +79,7 @@ export class TokenService {
   }
 
   private createSignedAccessTokenJwt(authCode: AuthCode, keyPair: KeyPair): Promise<string> {
-    const scope = this.mapScopesToString(authCode.scopes);
+    const scope = this.scopeMetadataService.mapScopesToString(authCode.scopes);
     return new SignJWT({ scope })
       .setProtectedHeader({ alg: keyPair.alg })
       .setIssuedAt()
@@ -88,13 +90,5 @@ export class TokenService {
         })
       )
       .sign(keyPair.privateKey);
-  }
-
-  private mapScopesToString(scopes: Array<string>) {
-    return scopes
-      .reduce((previous, current) => {
-        return (previous += `${current} `);
-      }, '')
-      .trim();
   }
 }

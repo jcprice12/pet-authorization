@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'winston';
+import { ScopeMetadataService } from '../server-metadata/scope-metadata.service';
 import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
 import { HashService } from '../util/hash.service';
@@ -24,7 +25,8 @@ export class AuthorizeService {
     private readonly usersService: UsersService,
     private readonly expirationService: ExpirationService,
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-    private readonly hashService: HashService
+    private readonly hashService: HashService,
+    private readonly scopeMetadataService: ScopeMetadataService
   ) {}
 
   @Span(retreiveAppTracer)
@@ -32,20 +34,21 @@ export class AuthorizeService {
   async attemptToCreateAuthCode(
     clientId: string,
     userId: string,
-    desiredScopes: Array<string>,
     redirectUri: string,
     codeChallengeMethod: CodeChallengeMethod,
+    desiredScopes?: Array<string>,
     codeChallenge?: string
   ): Promise<AuthCode> {
+    desiredScopes = desiredScopes ?? this.scopeMetadataService.getAllSupportedScopes();
     const matchingScopes = await this.usersService.getConsentedScopesByUserAndClient(userId, clientId, desiredScopes);
     if (!matchingScopes.length) {
-      throw new UserDeniedRequestError('user has not provided consent for any desired scopes');
+      throw new UserDeniedRequestError('user has not provided consent for any of the desired scopes');
     }
     return this.authorizeDao.insertAuthCode({
       code: uuidv4(),
       clientId,
       userId,
-      scopes: desiredScopes,
+      scopes: matchingScopes,
       expires: this.expirationService.createExpirationDateFromNowAsIsoString({
         minutes: this.minutesUntilAuthCodeExpires
       }),

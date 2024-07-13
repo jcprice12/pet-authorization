@@ -52,7 +52,7 @@ export class AuthorizeController {
     @Query('client_id') clientId: string, // no pipe needed because interceptor checks for validity
     @Query('redirect_uri') redirectUri: string, // no pipe needed because interceptor checks for validity and will always set the query param if valid
     @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
-    @Query('scope', new ParseArrayPipe({ separator: ' ' })) scopes: Array<string>,
+    @Query('scope', new ParseArrayPipe({ separator: ' ', optional: true })) scopes?: Array<string>,
     @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string,
     @Query('state') state?: string,
     @Query('code_challenge') codeChallenge?: string,
@@ -71,9 +71,9 @@ export class AuthorizeController {
         const authCode = await this.authorizeService.attemptToCreateAuthCode(
           clientId,
           user.id,
-          scopes,
           redirectUri,
           codeChallengeMethod,
+          scopes,
           codeChallenge
         );
         redirectObject = this.redirectService.goToCbUrlWithAuthCode(cb, authCode.code, state);

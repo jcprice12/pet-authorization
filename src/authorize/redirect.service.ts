@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { ScopeMetadataService } from '../server-metadata/scope-metadata.service';
 import { ErrorCode } from './error-code.enum';
 import { Prompt } from './prompt.enum';
 import { RedirectObject } from './redirect-object.model';
 
 @Injectable()
 export class RedirectService {
+  constructor(private readonly scopeMetadataService: ScopeMetadataService) {}
+
   goToCbUrlWithError(url: URL, errorCode: ErrorCode, state?: string): RedirectObject {
     return this.goToCbUrlWithParams(url, [
       { name: 'error', value: errorCode },
@@ -26,7 +29,8 @@ export class RedirectService {
 
   goToConsentPage(uriToGoToAfterConsent: URL): RedirectObject {
     const clientId = uriToGoToAfterConsent.searchParams.get('client_id');
-    const desiredScope = uriToGoToAfterConsent.searchParams.get('scope');
+    const desiredScope =
+      uriToGoToAfterConsent.searchParams.get('scope') ?? this.scopeMetadataService.getAllSupportedScopesAsStr();
     uriToGoToAfterConsent.searchParams.set('prompt', Prompt.NONE);
     return this.goToUrl(
       `/users/consent?scope=${encodeURIComponent(desiredScope)}&client_id=${clientId}&redirect_uri=${encodeURIComponent(

@@ -17,6 +17,7 @@
       <input type='hidden' id='afterLoginGoTo' value='{{afterLoginGoTo}}'/>
       <input type='button' value='Login' onclick='login()'/>
     </form>
+    <a href="/users/register">Register</a>
     <script>
       function login(){ 
         var afterLoginGoTo = document.getElementById('afterLoginGoTo').value;
@@ -24,8 +25,17 @@
           email: document.getElementById('email').value,
           password: document.getElementById('password').value
         };
-        $.post('/users/login', requestObj).always(function(){
+        $.post('/users/login', requestObj).done(function(){
           window.location.replace(afterLoginGoTo);
+        }).fail(function(e) {
+          const status = e.status
+          switch(status) {
+            case 401:
+              alert('Unrecognized email or password. Could not login.')
+              break
+            default:
+              alert('Unknown error occurred. Could not login.')
+          }
         });
       }
     </script>

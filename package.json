@@ -80,6 +80,7 @@
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^7.14.1",
     "@typescript-eslint/parser": "^7.14.1",
+    "dotenv": "^16.4.5",
     "dynamodb-local": "^0.0.34",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",

@@ -13,9 +13,13 @@ export class AuthenticationService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<PublicUser> {
-    const user = await this.usersDao.findUserByEmail(email);
-    if (await this.hashService.compare(password, user.password)) {
-      return this.usersService.mapUserToPublicUser(user);
+    try {
+      const user = await this.usersDao.findUserByEmail(email);
+      if (await this.hashService.compare(password, user.password)) {
+        return this.usersService.mapUserToPublicUser(user);
+      }
+    } catch (e) {
+      // do nothing
     }
     throw new UnauthorizedException();
   }
