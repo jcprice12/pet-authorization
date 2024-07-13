@@ -35,12 +35,12 @@ Feature: Authorize
     Given resource owner logs in with email "john@gmail.com" and password "password123"
     When client makes a request to the authorize endpoint with the following parameters for resource owner "john@gmail.com":
       | response_type | client_id | redirect_uri                    | scope          | prompt  |
-      | code          | 123       | https://foo.bar.com/hello-world | openid profile | consent |
+      | code          | 123       | https://foo.bar.com/hello-world | openid email | consent |
     Then a redirect is made to "/users/consent" with the following params:
       | name         | value                                                                                                                                    |
-      | scope        | openid profile                                                                                                                           |
+      | scope        | openid email                                                                                                                           |
       | client_id    | 123                                                                                                                                      |
-      | redirect_uri | .+\/authorize\?response_type=code&client_id=123&redirect_uri=https%3A%2F%2Ffoo\.bar\.com%2Fhello-world&scope=openid\+profile&prompt=none |
+      | redirect_uri | .+\/authorize\?response_type=code&client_id=123&redirect_uri=https%3A%2F%2Ffoo\.bar\.com%2Fhello-world&scope=openid\+email&prompt=none |
 
   Scenario: Authenticated request for consented scopes leads to redirect with auth code
     Given client with ID "123" and redirect URI "https://foo.bar.com/hello-world"
@@ -49,10 +49,10 @@ Feature: Authorize
     Given resource owner with email "john@gmail.com" consents to the following scopes for client "123":
       | scope   |
       | openId  |
-      | profile |
+      | email |
     When client makes a request to the authorize endpoint with the following parameters for resource owner "john@gmail.com":
       | response_type | client_id | redirect_uri                    | scope          | prompt |
-      | code          | 123       | https://foo.bar.com/hello-world | openid profile | none   |
+      | code          | 123       | https://foo.bar.com/hello-world | openid email | none   |
     Then a redirect is made to "https://foo.bar.com/hello-world" with the following params:
       | name | value         |
       | code | [A-Za-z0-9-]+ |

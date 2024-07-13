@@ -127,6 +127,7 @@ GET http://localhost:3000/keys
 ```
 
 ## TODO
+- implement user roles
 - require matching redirect uri for access token request if redirect uri was provided in authorization request
 - verify pkce flow works
 - verify state param works
