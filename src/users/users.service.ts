@@ -30,6 +30,7 @@ export class UsersService {
   async registerUser(userRegistrationDto: UserRegistrationDto): Promise<PublicUser> {
     const user: User = {
       ...userRegistrationDto,
+      roles: [],
       id: uuidv4(),
       password: await this.hashService.hashWithSalt(userRegistrationDto.password)
     };

@@ -1,14 +1,19 @@
+import { Scope } from '../server-metadata/scope.enum';
+
 interface UserBase {
   email: string;
-  givenName: string;
-  familyName: string;
+  given_name: string;
+  family_name: string;
 }
+
 /**
  * User model without password
  */
 export interface PublicUser extends UserBase {
   id: string;
+  roles: Array<string>;
 }
+
 /**
  * Base user model that is closest to representation in DB
  * Password is encrypted and salted
@@ -16,6 +21,7 @@ export interface PublicUser extends UserBase {
 export interface User extends PublicUser {
   password: string;
 }
+
 /**
  * User to be registered
  * Password is in plain text - be careful
@@ -23,13 +29,18 @@ export interface User extends PublicUser {
 export interface UserRegistrationDto extends UserBase {
   password: string;
 }
+
 /**
- * OIDC user info.
- * The spec provides a non-normative example with snake case. Because I am lazy and it is only a suggestion to use snake-case, I am using camel case
+ * OIDC user info claims.
  */
-export interface UserInfo extends Partial<UserBase> {
+export interface UserInfo {
   sub: string;
+  given_name: string;
+  family_name: string;
+  email?: string;
+  [Scope.JCPETS_ROLES]?: Array<string>;
 }
+
 /**
  * User's relationship to client - E.G. consented scopes client can use
  */

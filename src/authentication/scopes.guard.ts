@@ -10,6 +10,7 @@ export class HasOneOfTheGivenScopesGuard implements CanActivate {
   canActivate(executionContext: ExecutionContext): boolean {
     const givenScopes: Array<string> = this.getGivenScopes(executionContext);
     const user: UserWithScopes = this.getUserFromRequest(executionContext);
+    console.log('AHHHHHHHHHHHHHHH', user);
     return !givenScopes || this.hasAuthenticatedUserConsentedToOneOfTheGivenScopes(givenScopes, user);
   }
 

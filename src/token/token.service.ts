@@ -9,13 +9,12 @@ import { KEY_PAIR_SERVICE_PROVIDER } from '../keys/key-pair-service.provider';
 import { KeyPair } from '../keys/key-pair.model';
 import { KeyPairService } from '../keys/key-pair.service';
 import { ScopeMetadataService } from '../server-metadata/scope-metadata.service';
-import { Scope } from '../server-metadata/scope.enum';
+import { UserInfoService } from '../users/user-info.service';
 import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { InvalidGrantError } from './invalid-grant.error';
-import { OpenIdClaims } from './open-id-claims.model';
 import { TokenType } from './token-type.enum';
 import { ExchangeAuthCodeForTokensDto, TokenResource } from './token.model';
 
@@ -30,7 +29,8 @@ export class TokenService {
     @Inject(KEY_PAIR_SERVICE_PROVIDER) private readonly keyPairService: KeyPairService,
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     private readonly scopeMetadataService: ScopeMetadataService,
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
+    private readonly userInfoService: UserInfoService
   ) {}
 
   @LogPromise(retrieveLoggerOnClass)
@@ -70,18 +70,8 @@ export class TokenService {
 
   private async createSignedIdTokenJwt(authCode: AuthCode, keyPair: KeyPair): Promise<string> {
     const user = await this.usersService.getPublicUserById(authCode.userId);
-    const openIdClaims: OpenIdClaims = {
-      given_name: user.givenName,
-      family_name: user.familyName,
-      jcpets: {}
-    };
-    if (authCode.scopes.includes(Scope.EMAIL)) {
-      openIdClaims.email = user.email;
-    }
-    if (authCode.scopes.includes(Scope.JCPETS_ROLES)) {
-      openIdClaims.jcpets.roles = [];
-    }
-    return new SignJWT(openIdClaims as unknown as JWTPayload)
+    const userInfo = this.userInfoService.mapUserWithScopesToUserInfo({ ...user, scopes: authCode.scopes });
+    return new SignJWT(userInfo as unknown as JWTPayload)
       .setProtectedHeader({ alg: keyPair.alg })
       .setIssuedAt()
       .setSubject(authCode.userId)

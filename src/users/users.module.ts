@@ -10,6 +10,6 @@ import { ServerMetadataModule } from '../server-metadata/server-metadata.module'
   imports: [ServerMetadataModule],
   controllers: [UsersController, UserInfoController],
   providers: [UsersService, UsersDao, UserInfoService],
-  exports: [UsersService, UsersDao]
+  exports: [UsersService, UsersDao, UserInfoService]
 })
 export class UsersModule {}

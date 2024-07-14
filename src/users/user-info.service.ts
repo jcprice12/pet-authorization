@@ -1,9 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { UserInfo } from './user.model';
+import { Scope } from '../server-metadata/scope.enum';
+import { UserInfo, UserWithScopes } from './user.model';
 
 @Injectable()
 export class UserInfoService {
-  getScopedUserInfoForUser(userId: string, _scopes: Array<string>): Promise<UserInfo> {
-    return Promise.resolve({ sub: userId });
+  mapUserWithScopesToUserInfo(user: UserWithScopes): UserInfo {
+    const userInfo: UserInfo = {
+      given_name: user.given_name,
+      family_name: user.family_name,
+      sub: user.id
+    };
+    if (user.scopes.includes(Scope.EMAIL)) {
+      userInfo.email = user.email;
+    }
+    if (user.scopes.includes(Scope.JCPETS_ROLES)) {
+      userInfo[Scope.JCPETS_ROLES] = user.roles;
+    }
+    return userInfo;
   }
 }

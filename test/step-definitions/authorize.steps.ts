@@ -61,8 +61,8 @@ defineFeature(feature, (test) => {
       return world.useSuperTestAgent(email).post('/users/register').send({
         email,
         password,
-        givenName: 'foo',
-        familyName: 'bar'
+        given_name: 'foo',
+        family_name: 'bar'
       });
     });
   };

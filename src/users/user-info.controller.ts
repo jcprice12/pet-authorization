@@ -1,9 +1,10 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { GivenScopes } from '../authentication/given-scopes.decorator';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 import { HasOneOfTheGivenScopesGuard } from '../authentication/scopes.guard';
 import { UserInfoService } from './user-info.service';
-import { UserInfo } from './user.model';
+import { UserInfo, UserWithScopes } from './user.model';
 
 @Controller('/userinfo')
 export class UserInfoController {
@@ -12,7 +13,7 @@ export class UserInfoController {
   @Get('/')
   @GivenScopes('openid')
   @UseGuards(JwtAuthGuard, HasOneOfTheGivenScopesGuard)
-  async getUserInfo(): Promise<UserInfo> {
-    return this.userInfoService.getScopedUserInfoForUser('foo', []);
+  getUserInfo(@Req() req: Request): UserInfo {
+    return this.userInfoService.mapUserWithScopesToUserInfo(req.user as UserWithScopes);
   }
 }

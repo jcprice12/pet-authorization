@@ -3,6 +3,6 @@ import { MaskedSimpleObjectLogAttribute } from '../util/simple-masked.log-attrib
 
 export class MaskedUserLogAttribute extends MaskedSimpleObjectLogAttribute {
   constructor(name: string, thingWithUserInfo: User | UserRegistrationDto) {
-    super(name, thingWithUserInfo, ['email', 'givenName', 'familyName', 'password']);
+    super(name, thingWithUserInfo, ['email', 'given_name', 'family_name', 'password']);
   }
 }

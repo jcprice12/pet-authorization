@@ -24,9 +24,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ) => {
         /**
          * Note I am not decoding the JWT here (Passport says it is up to me to do so).
-         * I am not sure what I would use on the decoded JWT. Most likely, I would need
-         * to determine which key to use from it; however, I am currently not setting
-         * a "kid" on the JWT so I can't really use the JWT for that purpse at the moment.
+         * I am not sure what I would use on the decoded JWT. Most likely, I would use it
+         * to determine which public key to use to verify it. Because I am not currently setting
+         * a "kid" claim on the JWT, I just assume the public key can be retrieved from my local key service.
          */
         try {
           const keyPair: KeyPair = await keyPairService.getKeyPair();
@@ -41,7 +41,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   /**
-   * Because the JWT is signed and has been verified by passport at this point, I can just return the PublicUser object for the user id
+   * Because the JWT is signed and has been verified by passport at this point, I can just return the user object
    * @param accessTokenPayload B
    * @returns PublicUser
    */
