@@ -9,7 +9,7 @@ import { KeyPairService } from './key-pair.service';
  * generates a new key pair every time it is invoked. So, if this app is deployed with more than one instance,
  * then users won't be able to verify their JWTs since every instance will have a different key pair.
  *
- * For prod, I will need to generate a private key outside of the app. The key will use the pkcs8 sytax
+ * For prod, I will need to generate a private key outside of the app. The key will use the pkcs8 syntax
  * and be stored in something like AWS Secrets Manager in the PEM format. The app will retrieve that
  * private key and then derive the public key from it using Node's built-in crypto library:
  * https://stackoverflow.com/questions/28767837/extract-public-key-from-private-key-pem-using-only-nodejs-javascript

@@ -72,7 +72,7 @@ export class TokenService {
     const user = await this.usersService.getPublicUserById(authCode.userId);
     const userInfo = this.userInfoService.mapUserWithScopesToUserInfo({ ...user, scopes: authCode.scopes });
     return new SignJWT(userInfo as unknown as JWTPayload)
-      .setProtectedHeader({ alg: keyPair.alg })
+      .setProtectedHeader({ alg: keyPair.alg, kid: keyPair.kid })
       .setIssuedAt()
       .setSubject(authCode.userId)
       .setAudience(authCode.clientId)
@@ -87,7 +87,7 @@ export class TokenService {
   private createSignedAccessTokenJwt(authCode: AuthCode, keyPair: KeyPair): Promise<string> {
     const scope = this.scopeMetadataService.mapScopesToString(authCode.scopes);
     return new SignJWT({ scope })
-      .setProtectedHeader({ alg: keyPair.alg })
+      .setProtectedHeader({ alg: keyPair.alg, kid: keyPair.kid })
       .setIssuedAt()
       .setSubject(authCode.userId)
       .setExpirationTime(
