@@ -46,6 +46,7 @@ $ npm run start:prod
 ## Test
 
 ### Commands
+
 ```bash
 # unit tests
 $ npm run test
@@ -60,6 +61,7 @@ $ npm run test:cov
 ### Manual
 
 #### Authorize
+
 Note, the following requests will redirect you to an address that doesn't exist. That's intentional since I don't have an actual OAuth client to redirect to.
 
 ```
@@ -74,6 +76,7 @@ GET http://localhost:3000/authorize?response_type=code&client_id=1a2016d6-c5a3-4
 ```
 
 #### Token
+
 ```
 POST http://localhost:3000/token
 
@@ -122,12 +125,13 @@ POST http://localhost:3000/token
 ```
 
 #### Keys
+
 ```
 GET http://localhost:3000/keys
 ```
 
 ## TODO
-- require matching redirect uri for access token request if redirect uri was provided in authorization request
+
 - verify pkce flow works
 - verify state param works
 - implement production key pair service.

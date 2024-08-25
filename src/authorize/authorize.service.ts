@@ -13,7 +13,7 @@ import { retreiveAppTracer } from '../util/span.retriever';
 import { AuthCode, AuthCodeBase, UntrustedAuthCode } from './auth-code.model';
 import { AuthorizeDao } from './authorize.dao';
 import { CodeChallengeMethod } from './code-challenge-method.enum';
-import { AuthCodeConsumedError, AuthCodeExpiredError, AuthCodeUntrustedError } from './invalid-auth-code.error';
+import { InvalidAuthCodeError } from './invalid-auth-code.error';
 import { UserDeniedRequestError } from './user-denied-request.error';
 
 @Injectable()
@@ -34,8 +34,8 @@ export class AuthorizeService {
   async attemptToCreateAuthCode(
     clientId: string,
     userId: string,
-    redirectUri: string,
     codeChallengeMethod: CodeChallengeMethod,
+    redirectUri?: string,
     desiredScopes?: Array<string>,
     codeChallenge?: string
   ): Promise<AuthCode> {
@@ -68,7 +68,8 @@ export class AuthorizeService {
   async exchangeUntrustedAuthCodeForTrustedAuthCode(untrustedAuthCode: UntrustedAuthCode): Promise<AuthCode> {
     const trustedAuthCode = await this.getAuthCode(untrustedAuthCode.code);
     this.validateCodeVerifierMatchesCodeChallenge(untrustedAuthCode, trustedAuthCode);
-    this.validateUntrustedAuthCodeMatchesTrustedAuthCode(untrustedAuthCode, trustedAuthCode);
+    this.validateAuthCodeIssuedToSameClient(untrustedAuthCode, trustedAuthCode);
+    this.validateRedirectUriMatches(untrustedAuthCode, trustedAuthCode);
     this.validateAuthCodeHasNotExpired(trustedAuthCode);
     this.validateAuthCodeHasNotBeenConsumed(trustedAuthCode);
     return trustedAuthCode;
@@ -88,31 +89,31 @@ export class AuthorizeService {
         (trustedAuthCode.codeChallengeMethod === CodeChallengeMethod.PLAIN &&
           untrustedAuthCode.codeVerifier !== trustedAuthCode.codeChallenge))
     ) {
-      throw new AuthCodeUntrustedError();
+      throw new InvalidAuthCodeError();
     }
   }
 
-  private validateUntrustedAuthCodeMatchesTrustedAuthCode(
-    untrustedAuthCode: AuthCodeBase,
-    trustedAuthCode: AuthCode
-  ): void {
-    if (
-      untrustedAuthCode.clientId !== trustedAuthCode.clientId ||
-      untrustedAuthCode.redirectUri !== trustedAuthCode.redirectUri
-    ) {
-      throw new AuthCodeUntrustedError();
+  private validateAuthCodeIssuedToSameClient(untrustedAuthCode: AuthCodeBase, trustedAuthCode: AuthCode): void {
+    if (untrustedAuthCode.clientId !== trustedAuthCode.clientId) {
+      throw new InvalidAuthCodeError();
     }
   }
 
-  private validateAuthCodeHasNotExpired(authCode: AuthCode): void {
-    if (this.expirationService.isExpired(authCode.expires)) {
-      throw new AuthCodeExpiredError();
+  private validateAuthCodeHasNotExpired(trustedAuthCode: AuthCode): void {
+    if (this.expirationService.isExpired(trustedAuthCode.expires)) {
+      throw new InvalidAuthCodeError();
     }
   }
 
-  private validateAuthCodeHasNotBeenConsumed(authCode: AuthCode): void {
-    if (authCode.isConsumed) {
-      throw new AuthCodeConsumedError();
+  private validateAuthCodeHasNotBeenConsumed(trustedAuthCode: AuthCode): void {
+    if (trustedAuthCode.isConsumed) {
+      throw new InvalidAuthCodeError();
+    }
+  }
+
+  private validateRedirectUriMatches(untrustedAuthCode: AuthCodeBase, trustedAuthCode: AuthCode): void {
+    if (trustedAuthCode.redirectUri && untrustedAuthCode.redirectUri !== trustedAuthCode.redirectUri) {
+      throw new InvalidAuthCodeError();
     }
   }
 }

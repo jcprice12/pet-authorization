@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Request } from 'express';
-import { catchError, concat, from, iif, mergeMap, Observable, of, tap, throwError } from 'rxjs';
+import { catchError, from, iif, mergeMap, Observable, throwError } from 'rxjs';
 import { Client } from '../clients/client.model';
 import { ClientsService } from '../clients/clients.service';
 import { InvalidClientIdError } from './invalid-client-id.error';
@@ -22,18 +22,9 @@ export class RedirectValidationInterceptor implements NestInterceptor {
         catchError(() => invalidClientIdError$),
         mergeMap((client: Client) =>
           iif(
-            () => !redirect_uri,
-            concat(
-              of(client.redirect_uris[0]).pipe(
-                tap((defaultRedirectUri) => (req.query.redirect_uri = defaultRedirectUri))
-              ),
-              next.handle()
-            ),
-            iif(
-              () => client.redirect_uris.includes(redirect_uri),
-              next.handle(),
-              throwError(() => new InvalidRedirectUriError())
-            )
+            () => !!redirect_uri && !client.redirect_uris.includes(redirect_uri),
+            throwError(() => new InvalidRedirectUriError()),
+            next.handle()
           )
         )
       ),

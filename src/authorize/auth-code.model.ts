@@ -3,7 +3,7 @@ import { CodeChallengeMethod } from './code-challenge-method.enum';
 export interface AuthCodeBase {
   clientId: string;
   code: string;
-  redirectUri: string;
+  redirectUri?: string;
 }
 
 export interface UntrustedAuthCode extends AuthCodeBase {

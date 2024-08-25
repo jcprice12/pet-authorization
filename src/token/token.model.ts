@@ -10,13 +10,13 @@ export class ExchangeAuthCodeForTokensDto {
   code: string;
 
   @IsNotEmpty()
-  redirect_uri: string;
-
-  @IsNotEmpty()
   client_id: string;
 
   @IsOptional()
   code_verifier?: string;
+
+  @IsOptional()
+  redirect_uri?: string;
 }
 
 export interface TokenResource {

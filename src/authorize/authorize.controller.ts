@@ -12,6 +12,7 @@ import {
 import { Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { ClientsService } from '../clients/clients.service';
 import { PublicUser } from '../users/user.model';
 import { LogAttributeValue } from '../util/log-attribute-value.enum';
 import { LogPromise } from '../util/log.decorator';
@@ -35,6 +36,7 @@ export class AuthorizeController {
   constructor(
     private readonly authorizeService: AuthorizeService,
     private readonly redirectService: RedirectService,
+    private readonly clientService: ClientsService,
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger
   ) {}
 
@@ -50,8 +52,8 @@ export class AuthorizeController {
     @Req() req: Request,
     @FullURL() fullUrl: URL,
     @Query('client_id') clientId: string, // no pipe needed because interceptor checks for validity
-    @Query('redirect_uri') redirectUri: string, // no pipe needed because interceptor checks for validity and will always set the query param if valid
     @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
+    @Query('redirect_uri') redirectUri?: string, // no pipe needed because interceptor checks for validity
     @Query('scope', new ParseArrayPipe({ separator: ' ', optional: true })) scopes?: Array<string>,
     @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string,
     @Query('state') state?: string,
@@ -67,15 +69,15 @@ export class AuthorizeController {
         redirectObject = this.redirectService.goToConsentPage(fullUrl);
       } else {
         const user = req.user as PublicUser;
-        const cb = new URL(redirectUri);
         const authCode = await this.authorizeService.attemptToCreateAuthCode(
           clientId,
           user.id,
-          redirectUri,
           codeChallengeMethod,
+          redirectUri,
           scopes,
           codeChallenge
         );
+        const cb = new URL(redirectUri || (await this.clientService.getClient(clientId)).redirect_uris[0]);
         redirectObject = this.redirectService.goToCbUrlWithAuthCode(cb, authCode.code, state);
       }
     } else {
