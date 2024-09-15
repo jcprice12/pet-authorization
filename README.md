@@ -135,8 +135,6 @@ GET http://localhost:3000/keys
 - verify pkce flow works
 - verify state param works
 - implement production key pair service.
-- implement oidc-specific scopes (scopes only available when "oidc" scope is authorized. E.G. "email" scope)
-  - also, ensure that if an oidc-specific scope has not been authorized, it should not be available on both ID token AND user info endpoint
 - change server metadata endpoint to be /.well-known/openid-configuration
 - research way to tell consumers how to get public key to verify tokens (included in JWTs?). "kid" claim? "iss" claim?
   - look at the "JWS" RFC: https://datatracker.ietf.org/doc/html/rfc7515#section-4. Ultimately, resource providers need to "hard code" which OAuth servers and IDP's they trust (or get that info from a source that is not the JWT).
