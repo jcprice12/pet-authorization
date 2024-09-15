@@ -15,6 +15,7 @@ import { AuthorizeDao } from './authorize.dao';
 import { CodeChallengeMethod } from './code-challenge-method.enum';
 import { InvalidAuthCodeError } from './invalid-auth-code.error';
 import { UserDeniedRequestError } from './user-denied-request.error';
+import { Scope } from '../server-metadata/scope.enum';
 
 @Injectable()
 export class AuthorizeService {
@@ -36,11 +37,11 @@ export class AuthorizeService {
     userId: string,
     codeChallengeMethod: CodeChallengeMethod,
     redirectUri?: string,
-    desiredScopes?: Array<string>,
+    desiredScopes?: Array<Scope>,
     codeChallenge?: string
   ): Promise<AuthCode> {
     desiredScopes = desiredScopes ?? this.scopeMetadataService.getAllSupportedScopes();
-    const matchingScopes = await this.usersService.getConsentedScopesByUserAndClient(userId, clientId, desiredScopes);
+    const matchingScopes = await this.usersService.getAuthorizedScopesUserAndClient(userId, clientId, desiredScopes);
     if (!matchingScopes.length) {
       throw new UserDeniedRequestError('user has not provided consent for any of the desired scopes');
     }

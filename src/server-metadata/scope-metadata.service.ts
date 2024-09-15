@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { ScopeMetadata } from './scope-metadata.model';
-import { ScopeDescriptions } from './scope.enum';
+import { Scope, ScopeDescriptions } from './scope.enum';
 
 @Injectable()
 export class ScopeMetadataService {
   public readonly namespace = 'jcpets';
 
   getAllSupportedScopesMetadata(): Array<ScopeMetadata> {
-    return Object.entries(ScopeDescriptions).map(([key, value]) => ({ name: key, description: value }));
+    return Object.entries(ScopeDescriptions).map(([key, value]) => ({ name: key as Scope, description: value }));
   }
 
-  getScopeMetadataFor(scopes: Array<string>): Array<ScopeMetadata> {
+  getScopeMetadataFor(scopes: Array<Scope>): Array<ScopeMetadata> {
     const allScopeMetadata = this.getAllSupportedScopesMetadata();
     return scopes.map((scope) => {
       return {
@@ -20,7 +20,7 @@ export class ScopeMetadataService {
     });
   }
 
-  getAllSupportedScopes(): Array<string> {
+  getAllSupportedScopes(): Array<Scope> {
     return this.getAllSupportedScopesMetadata().map((scopeMetadata) => scopeMetadata.name);
   }
 

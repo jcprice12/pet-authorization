@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'winston';
+import { Scope, ScopeRoles } from '../server-metadata/scope.enum';
 import { HashService } from '../util/hash.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
@@ -38,10 +39,17 @@ export class UsersService {
   }
 
   @LogPromise(retrieveLoggerOnClass)
-  async getConsentedScopesByUserAndClient(userId: string, clientId: string, scopes: Array<string>) {
+  async getAuthorizedScopesUserAndClient(userId: string, clientId: string, scopes: Array<Scope>) {
     try {
-      const clientInfoForUser = await this.usersDao.findClientInfoForUser(userId, clientId);
-      return scopes.filter((scope) => clientInfoForUser.scopes.includes(scope));
+      const [clientInfoForUser, user] = await Promise.all([
+        this.usersDao.findClientInfoForUser(userId, clientId),
+        this.usersDao.findUserById(userId)
+      ]);
+      return scopes.filter(
+        (scope) =>
+          clientInfoForUser.scopes.includes(scope) &&
+          (!ScopeRoles[scope].length || ScopeRoles[scope].some((role) => user.roles.includes(role)))
+      );
     } catch (e) {
       return [];
     }

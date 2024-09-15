@@ -9,6 +9,7 @@ import { KEY_PAIR_SERVICE_PROVIDER } from '../keys/key-pair-service.provider';
 import { KeyPair } from '../keys/key-pair.model';
 import { KeyPairService } from '../keys/key-pair.service';
 import { ScopeMetadataService } from '../server-metadata/scope-metadata.service';
+import { Scope } from '../server-metadata/scope.enum';
 import { UserInfoService } from '../users/user-info.service';
 import { UsersService } from '../users/users.service';
 import { ExpirationService } from '../util/expiration.service';
@@ -62,7 +63,7 @@ export class TokenService {
       expires_in: this.accessTokenExpirationTimeInSeconds,
       token_type: TokenType.BEARER
     };
-    if (authCode.scopes.includes('openid')) {
+    if (authCode.scopes.includes(Scope.OPEN_ID)) {
       tokenResponse.id_token = await this.createSignedIdTokenJwt(authCode, keyPair);
     }
     return tokenResponse;

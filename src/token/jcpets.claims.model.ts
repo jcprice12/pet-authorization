@@ -1,3 +1,5 @@
+import { Role } from '../users/role.enum';
+
 export interface JcpetsClaims {
-  roles?: Array<string>;
+  roles?: Array<Role>;
 }

@@ -1,4 +1,5 @@
 import { Scope } from '../server-metadata/scope.enum';
+import { Role } from './role.enum';
 
 interface UserBase {
   email: string;
@@ -11,7 +12,7 @@ interface UserBase {
  */
 export interface PublicUser extends UserBase {
   id: string;
-  roles: Array<string>;
+  roles: Array<Role>;
 }
 
 /**
@@ -38,7 +39,7 @@ export interface UserInfo {
   given_name: string;
   family_name: string;
   email?: string;
-  [Scope.JCPETS_ROLES]?: Array<string>;
+  [Scope.JCPETS_ROLES]?: Array<Role>;
 }
 
 /**
@@ -47,9 +48,9 @@ export interface UserInfo {
 export interface ClientInfoForUser {
   userId: string;
   clientId: string;
-  scopes: Array<string>;
+  scopes: Array<Scope>;
 }
 
 export interface UserWithScopes extends PublicUser {
-  scopes: Array<string>;
+  scopes: Array<Scope>;
 }

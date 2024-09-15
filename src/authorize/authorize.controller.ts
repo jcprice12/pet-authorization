@@ -13,6 +13,7 @@ import { Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ClientsService } from '../clients/clients.service';
+import { Scope } from '../server-metadata/scope.enum';
 import { PublicUser } from '../users/user.model';
 import { LogAttributeValue } from '../util/log-attribute-value.enum';
 import { LogPromise } from '../util/log.decorator';
@@ -54,7 +55,7 @@ export class AuthorizeController {
     @Query('client_id') clientId: string, // no pipe needed because interceptor checks for validity
     @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
     @Query('redirect_uri') redirectUri?: string, // no pipe needed because interceptor checks for validity
-    @Query('scope', new ParseArrayPipe({ separator: ' ', optional: true })) scopes?: Array<string>,
+    @Query('scope', new ParseArrayPipe({ separator: ' ', optional: true })) scopes?: Array<Scope>,
     @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string,
     @Query('state') state?: string,
     @Query('code_challenge') codeChallenge?: string,

@@ -1,4 +1,6 @@
+import { Scope } from './scope.enum';
+
 export interface ScopeMetadata {
-  name: string;
+  name: Scope;
   description: string;
 }
