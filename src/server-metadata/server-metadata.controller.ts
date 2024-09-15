@@ -16,7 +16,7 @@ export class ServerMetadataController {
     private readonly serverMetadataService: ServerMetadataService
   ) {}
 
-  // inspired by https://developer.okta.com/docs/reference/api/oidc/#well-known-oauth-authorization-server
+  // inspired by https://developer.okta.com/docs/api/openapi/okta-oauth/oauth/tag/OrgAS/#tag/OrgAS/operation/getWellKnownOpenIDConfiguration
   @Get()
   @Span(retreiveAppTracer)
   @LogPromise(retrieveLoggerOnClass, {
