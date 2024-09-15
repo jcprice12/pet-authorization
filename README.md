@@ -136,6 +136,7 @@ GET http://localhost:3000/keys
 - verify state param works
 - implement production key pair service.
 - change server metadata endpoint to be /.well-known/openid-configuration
+- setup production domain
 - research way to tell consumers how to get public key to verify tokens (included in JWTs?). "kid" claim? "iss" claim?
   - look at the "JWS" RFC: https://datatracker.ietf.org/doc/html/rfc7515#section-4. Ultimately, resource providers need to "hard code" which OAuth servers and IDP's they trust (or get that info from a source that is not the JWT).
     - Base on on Spring Boot documentation (https://docs.spring.io/spring-security/reference/reactive/oauth2/resource-server/jwt.html), I should implement:
