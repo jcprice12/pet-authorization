@@ -1,4 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ResponseType } from '../authorize/response-type.enum';
+import { GrantType } from '../token/grant-type.enum';
 import { ScopeMetadataService } from './scope-metadata.service';
 import { ServerMetadata } from './server-metadata.model';
 
@@ -13,8 +15,10 @@ export class ServerMetadataService {
       token_endpoint: `${this.getHost()}/token`,
       registration_endpoint: `${this.getHost()}/clients`,
       userinfo_endpoint: `${this.getHost()}/userinfo`,
+      jwks_uri: `${this.getHost()}/keys`,
       scopes_supported: this.scopeMetadataService.getAllSupportedScopesMetadata(),
-      jwks_uri: `${this.getHost()}/keys`
+      response_types_supported: Object.values(ResponseType),
+      grant_types_supported: Object.values(GrantType)
     };
   }
 
