@@ -135,15 +135,5 @@ GET http://localhost:3000/keys
 - verify pkce flow works
 - verify state param works
 - implement production key pair service.
-- change server metadata endpoint to be /.well-known/openid-configuration
 - setup production domain
-- research way to tell consumers how to get public key to verify tokens (included in JWTs?). "kid" claim? "iss" claim?
-  - look at the "JWS" RFC: https://datatracker.ietf.org/doc/html/rfc7515#section-4. Ultimately, resource providers need to "hard code" which OAuth servers and IDP's they trust (or get that info from a source that is not the JWT).
-    - Base on on Spring Boot documentation (https://docs.spring.io/spring-security/reference/reactive/oauth2/resource-server/jwt.html), I should implement:
-      - The "iss" claim in the JWT body/payload. Should be the URL of the OAuth server (E.G. http://localhost:3000).
-      - implement the "nbf" claim on the body/payload of the JWT
-      - The "jwks_uri" field in the server metadata endpoint.
-    - Based off my own hunch, I should probably implement the following:
-      - the "kid" claim in the JWT header. Use this during JWT verification to select the correct key from the /keys endpoint
-      - the "jku" claim in the JWT header. This should be the exact URI of the /keys endpoint. This header really isn't needed, but may be good to include for a sanity check during JWT verification.
-
+- change server metadata endpoint to be /.well-known/openid-configuration

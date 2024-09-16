@@ -7,8 +7,8 @@ export class ExpirationService {
     return DateTime.utc().plus(duration);
   }
 
-  createExpirationDateFromNowAsMillisecondsSinceEpoch(duration: DurationLike): number {
-    return DateTime.utc().plus(duration).toMillis();
+  createExpirationDateFromNowAsSecondsSinceEpoch(duration: DurationLike): number {
+    return this.createExpirationDateFromNow(duration).toSeconds();
   }
 
   createExpirationDateFromNowAsIsoString(duration: DurationLike): string {
