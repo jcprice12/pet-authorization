@@ -5,8 +5,8 @@ const namespace = 'jcpets';
 export enum Scope {
   OPEN_ID = 'openid',
   EMAIL = 'email',
-  JCPETS_ROLES = `${namespace}.roles`,
-  JCPETS_PETS_WRITE = `${namespace}.pets.write`
+  JCPETS_ROLES = `${namespace}:roles`,
+  JCPETS_PETS_WRITE = `${namespace}:pets:write`
 }
 
 export const ScopeDescriptions: { [key in Scope]: string } = {

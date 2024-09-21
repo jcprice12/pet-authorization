@@ -66,13 +66,13 @@ Note, the following requests will redirect you to an address that doesn't exist.
 
 ```
 // login
-GET http://localhost:3000/authorize?response_type=code&client_id=1a2016d6-c5a3-4b24-a18d-58de3d5b5110&scope=openid%20jcpets.roles&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=login
+GET http://localhost:3000/authorize?response_type=code&client_id=1a2016d6-c5a3-4b24-a18d-58de3d5b5110&scope=openid%20jcpets:roles%20jcpets:pets:write&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=login
 
 // consent
-GET http://localhost:3000/authorize?response_type=code&client_id=1a2016d6-c5a3-4b24-a18d-58de3d5b5110&scope=openid%20jcpets.roles&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=consent
+GET http://localhost:3000/authorize?response_type=code&client_id=1a2016d6-c5a3-4b24-a18d-58de3d5b5110&scope=openid%20jcpets:roles%20jcpets:pets:write&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=consent
 
 // get auth code
-GET http://localhost:3000/authorize?response_type=code&client_id=1a2016d6-c5a3-4b24-a18d-58de3d5b5110&scope=openid%20jcpets.roles&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=none
+GET http://localhost:3000/authorize?response_type=code&client_id=1a2016d6-c5a3-4b24-a18d-58de3d5b5110&scope=openid%20jcpets:roles%20jcpets:pets:write&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=none
 ```
 
 #### Token
