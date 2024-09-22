@@ -68,19 +68,36 @@ $ npm run test:cov
 
 ### Manual
 
+#### Clients
+
+```
+// register
+
+POST http://localhost:3000/clients
+
+// request body
+{
+  "redirect_uris": [
+    "http://localhost:3333/callback"
+  ],
+  "client_name": "JCPets UI",
+  "token_endpoint_auth_method": "none"
+}
+```
+
 #### Authorize
 
 Note, the following requests will redirect you to an address that doesn't exist. That's intentional since I don't have an actual OAuth client to redirect to.
 
 ```
 // login
-GET http://localhost:3000/authorize?response_type=code&client_id=1a2016d6-c5a3-4b24-a18d-58de3d5b5110&scope=openid%20jcpets:roles%20jcpets:pets:write&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=login
+GET http://localhost:3000/authorize?response_type=code&client_id=b80c6136-c23b-4702-95d0-0962ecfabf6a&scope=openid%20jcpets:roles%20jcpets:pets:write&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=login
 
 // consent
-GET http://localhost:3000/authorize?response_type=code&client_id=1a2016d6-c5a3-4b24-a18d-58de3d5b5110&scope=openid%20jcpets:roles%20jcpets:pets:write&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=consent
+GET http://localhost:3000/authorize?response_type=code&client_id=b80c6136-c23b-4702-95d0-0962ecfabf6a&scope=openid%20jcpets:roles%20jcpets:pets:write&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=consent
 
 // get auth code
-GET http://localhost:3000/authorize?response_type=code&client_id=1a2016d6-c5a3-4b24-a18d-58de3d5b5110&scope=openid%20jcpets:roles%20jcpets:pets:write&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=none
+GET http://localhost:3000/authorize?response_type=code&client_id=b80c6136-c23b-4702-95d0-0962ecfabf6a&scope=openid%20jcpets:roles%20jcpets:pets:write&redirect_uri=http%3A%2F%2Flocalhost%3A3333%2Fcallback&prompt=none
 ```
 
 #### Token
@@ -92,43 +109,8 @@ POST http://localhost:3000/token
 {
   "grant_type": "authorization_code",
   "code": "cf93058a-4826-4b8b-af2a-7b1bc2c7bfe7",
-  "redirect_uri": "http://localhost:3000/foo/",
-  "client_id": "1234"
-}
-
-// response
-{
-    "access_token": "encoded.access.token",
-    "scope": "openid",
-    "expires_in": 600,
-    "token_type": "bearer",
-    "id_token": "encoded.oidc.token" // present if "openid" scope included
-}
-
-// decoded access token header
-{
-  "alg": "RS256"
-}
-
-// decoded access token payload
-{
-  "scope": "openid",
-  "iat": 1656190231,
-  "sub": "869fcc22-febe-4a99-9297-e61a5533b0b4",// user id
-  "exp": 1656190831855
-}
-
-// decoded id token header
-{
-  "alg": "RS256"
-}
-
-// decoded id token payload
-{
-  "iat": 1656190231,
-  "sub": "869fcc22-febe-4a99-9297-e61a5533b0b4",// user id
-  "aud": "1234",// client id
-  "exp": 1656190831858
+  "redirect_uri": "http://localhost:3000/callback",
+  "client_id": "b80c6136-c23b-4702-95d0-0962ecfabf6a"
 }
 ```
 
