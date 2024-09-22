@@ -28,7 +28,9 @@ You will also need to setup the actual table that this app uses. You can look th
 
 I have placed some example DynamoDB commands in the `dynamo-commands` folder. Use those in the local DynamoDB shell.
 
-## Running the app
+## Running the app Locally
+
+### Without Docker
 
 Note, you must have an instance of dynamo that the app can connect to.
 
@@ -42,6 +44,12 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+### With Docker
+
+Note, I have not yet added DynamoDB local to the Docker compose file. So, you will still need to run that manually beforehand
+
+`docker compose up --watch`
 
 ## Test
 
