@@ -2,17 +2,43 @@
 
 OAuth and Identity Provider Server for the pet-adoption website.
 
-## Installation
+## Local development
+
+Follow the below guides to get started.
+
+### Local Development with Docker
+
+#### Prerequisites
+
+##### Docker Desktop
+
+For local development, I use Docker Desktop. After installing it, simply run it on your host to start the Docker daemon.
+
+#### Running the app with Docker Compose
+
+While in the app directory, run `docker compose up --watch`. It should set up your complete development environment. Note, the `aws-cli` service will fail on subsequent runs because the `PetAuth` table will have already been created. That's fine. It doesn't prevent the rest of the services from running.
+
+Run `docker compose down` when you're finished to cleanup your containers
+
+### Local Development without Docker
+
+If you're crazy, feel free to set up each of the components of the app on your own
+
+#### Prerequisites
+
+##### Node Modules
 
 ```bash
 $ npm install
 ```
 
-## Dynamo
+##### Dynamo
 
-This app uses DynamoDB. For local development (NODE_ENV === 'local'), you need to have a local DynamoDB instance running on port 8000.
+You need to have a local DynamoDB instance running on port 8000. I have chosen to use [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) for this. Follow the documentation on AWS's website to install it.
 
-To set up DynamoDB local, visit https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html. You can access the shell at http://localhost:8000/shell/. To start running DynamoDB locally, run the following commmand:
+Note, at the time of this writing, I am using version 1.16.0. That version comes with a shell (http://localhost:8000/shell/). Later versions (like the one my Docker Compose file is using) don't come with a shell.
+
+To start running DynamoDB locally, run the following commmand:
 
 ```
 java -Djava.library.path=~/LocalDynamo/DynamoDBLocal_lib -jar ~/LocalDynamo/DynamoDBLocal.jar -sharedDb"
@@ -24,15 +50,11 @@ Personally, I set up an alias called "dyno" that I can run in a bash shell by ad
 alias dyno="java -Djava.library.path=~/LocalDynamo/DynamoDBLocal_lib -jar ~/LocalDynamo/DynamoDBLocal.jar -sharedDb"
 ```
 
-You will also need to setup the actual table that this app uses. You can look through the code to determine things like what the table name should be and what the indexes are; however, I would recommend getting all that information by taking a look at the jest-dynalite-config.js file.
+You will also need to setup the actual table that this app uses. You can look through the code to determine things like what the table name should be and what the indexes are; however, I would recommend getting all that information by taking a look at either the `jest-dynalite-config.js` or `create-table.sh` files.
 
-I have placed some example DynamoDB commands in the `dynamo-commands` folder. Use those in the local DynamoDB shell.
+I have placed some example DynamoDB commands in the `dynamo-commands` folder. Use those in the local DynamoDB shell if it's available to you. Otherwise, download the [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and use that to interact with your table.
 
-## Running the app Locally
-
-### Without Docker
-
-Note, you must have an instance of dynamo that the app can connect to.
+#### Running the app locally.
 
 ```bash
 # development
@@ -45,15 +67,9 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-### With Docker
+## Testing
 
-Note, I have not yet added DynamoDB local to the Docker compose file. So, you will still need to run that manually beforehand
-
-`docker compose up --watch`
-
-## Test
-
-### Commands
+### Unit Tests
 
 ```bash
 # unit tests
