@@ -54,6 +54,17 @@ You will also need to setup the actual table that this app uses. You can look th
 
 I have placed some example DynamoDB commands in the `dynamo-commands` folder. Use those in the local DynamoDB shell if it's available to you. Otherwise, download the [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and use that to interact with your table.
 
+##### Environment variables
+
+| Name                     | Value                 |
+|--------------------------|-----------------------|
+| DYNAMO_DB_LOCAL_ENDPOINT | http://localhost:8000 |
+| NODE_ENV                 | local                 |
+| PORT                     | 3000                  |
+| AWS_ACCESS_KEY_ID        | DUMMYIDEXAMPLE        |
+| AWS_SECRET_ACCESS_KEY    | DUMMYEXAMPLEKEY       |
+| AWS_REGION               | us-east-1             |
+
 #### Running the app locally.
 
 ```bash
