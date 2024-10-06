@@ -59,7 +59,7 @@ export class AuthorizeController {
     @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string,
     @Query('state') state?: string,
     @Query('code_challenge') codeChallenge?: string,
-    @Query('code_challenge_method', new ValidEnumPipe(Prompt, { isOptional: true }))
+    @Query('code_challenge_method', new ValidEnumPipe(CodeChallengeMethod, { isOptional: true }))
     codeChallengeMethod: CodeChallengeMethod = CodeChallengeMethod.PLAIN
   ): Promise<RedirectObject> {
     let redirectObject: RedirectObject;

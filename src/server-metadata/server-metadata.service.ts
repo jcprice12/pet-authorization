@@ -24,7 +24,7 @@ export class ServerMetadataService {
 
   getHost(): string {
     if (process.env.NODE_ENV === 'local') {
-      return `https://localhost:${process.env.PORT}`;
+      return `http://localhost:${process.env.PORT}`;
     }
     throw new InternalServerErrorException('No host for environment');
   }

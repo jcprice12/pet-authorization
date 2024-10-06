@@ -3,6 +3,7 @@ startTracing(); //must run before other imports
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as cookieParser from 'cookie-parser';
+import * as cors from 'cors';
 import * as expressSession from 'express-session';
 import * as passport from 'passport';
 import { join } from 'path';
@@ -12,6 +13,7 @@ import { DynamoSessionStore } from './authentication/dynamo-session.store';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const sessionStore = app.get(DynamoSessionStore);
+  app.use(cors({ credentials: true, origin: 'http://localhost:4200' }));
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');
   app.use(cookieParser());
