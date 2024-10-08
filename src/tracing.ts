@@ -14,7 +14,9 @@ const sdk = new NodeSDK({
 });
 
 export function startTracing() {
-  sdk.start();
+  if (process.env['DISABLE_OTEL'] !== 'y') {
+    sdk.start();
+  }
 }
 
 process.on('SIGINT', () => {
