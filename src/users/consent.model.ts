@@ -1,10 +1,10 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 import { Scope } from '../server-metadata/scope.enum';
 
 export class ConsentDto {
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
+  @IsEnum(Scope, { each: true })
   scopes: Array<Scope> = [];
 
   @IsNotEmpty()
