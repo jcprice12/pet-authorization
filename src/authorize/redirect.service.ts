@@ -23,7 +23,7 @@ export class RedirectService {
   }
 
   goToLoginPage(uriToGoToAfterLogin: URL): RedirectObject {
-    uriToGoToAfterLogin.searchParams.set('prompt', Prompt.NONE);
+    this.removePrompt(Prompt.LOGIN, uriToGoToAfterLogin);
     return this.goToUrl(`/users/login?redirect_uri=${encodeURIComponent(uriToGoToAfterLogin.toString())}`);
   }
 
@@ -31,12 +31,22 @@ export class RedirectService {
     const clientId = uriToGoToAfterConsent.searchParams.get('client_id');
     const desiredScope =
       uriToGoToAfterConsent.searchParams.get('scope') ?? this.scopeMetadataService.getAllSupportedScopesAsStr();
-    uriToGoToAfterConsent.searchParams.set('prompt', Prompt.NONE);
+    this.removePrompt(Prompt.CONSENT, uriToGoToAfterConsent);
     return this.goToUrl(
       `/users/consent?scope=${encodeURIComponent(desiredScope)}&client_id=${clientId}&redirect_uri=${encodeURIComponent(
         uriToGoToAfterConsent.toString()
       )}`
     );
+  }
+
+  private removePrompt(promptToRemove: Prompt, urlWithPrompt: URL): void {
+    let prompt = urlWithPrompt.searchParams.get('prompt');
+    prompt = prompt.replace(promptToRemove, '').trim();
+    if (prompt) {
+      urlWithPrompt.searchParams.set('prompt', prompt);
+    } else {
+      urlWithPrompt.searchParams.delete('prompt');
+    }
   }
 
   private goToCbUrlWithParams(url: URL, params: Array<{ name: string; value?: string }>): RedirectObject {
