@@ -43,11 +43,12 @@ describe('Given a pipe', () => {
     });
 
     describe.each([
-      ['foo', isValid([MyTestEnum.FOO])],
-      ['foo bar', isValid([MyTestEnum.FOO, MyTestEnum.BAR])],
+      [' foo', isValid([MyTestEnum.FOO])],
+      ['foo bar ', isValid([MyTestEnum.FOO, MyTestEnum.BAR])],
       ['bar', isValid([MyTestEnum.BAR])],
       ['baz', isNotValid(getExpectedErrorMessage('baz', argName))],
       ['err', isNotValid(getExpectedErrorMessage('err', argName))],
+      [' ', isNotValid(getExpectedErrorMessage(' ', argName))],
       ['', isValid('')],
       [undefined, isValid(undefined)]
     ])('Given value %s', (value, expectation) => {

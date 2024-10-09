@@ -16,9 +16,11 @@ export class ValidArrayOfEnumPipe<E> implements PipeTransform {
     if (this.options.optional && !value) {
       return value;
     }
-    if (value && typeof value === 'string') {
-      const arr = value.split(this.options.separator ?? ' ');
-      if (arr.every((val) => Object.values(this.enumSpec).includes(val))) {
+    if (typeof value === 'string' && value.trim()) {
+      const trimmed = value.trim();
+      const arr = trimmed.split(this.options.separator ?? ' ');
+      const valuesForEnum = Object.values(this.enumSpec);
+      if (arr.every((val) => valuesForEnum.includes(val))) {
         if (!this.options.customValidation || this.options.customValidation(arr as Array<E>)) {
           return arr;
         }
