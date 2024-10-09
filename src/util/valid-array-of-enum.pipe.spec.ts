@@ -1,4 +1,5 @@
 import { ArgumentMetadata, BadRequestException } from '@nestjs/common';
+import { everyValueUnique } from './every-value-unique.validation';
 import { ValidArrayOfEnumPipe } from './valid-array-of-enum.pipe';
 
 enum MyTestEnum {
@@ -26,11 +27,14 @@ const getExpectedErrorMessage = (value: string, argName: string) => {
 
 describe('Given a pipe', () => {
   let pipe: ValidArrayOfEnumPipe<MyTestEnum>;
-  const customValidation = (arr: Array<MyTestEnum>): boolean => {
+  const excludeBaz = (arr: Array<MyTestEnum>): boolean => {
     return !arr.some((val) => val == MyTestEnum.BAZ);
   };
   beforeEach(() => {
-    pipe = new ValidArrayOfEnumPipe(MyTestEnum, { optional: true, customValidation });
+    pipe = new ValidArrayOfEnumPipe(MyTestEnum, {
+      optional: true,
+      additionalValidations: [everyValueUnique, excludeBaz]
+    });
   });
 
   describe('Given an argument decorated by pipe', () => {
@@ -46,6 +50,7 @@ describe('Given a pipe', () => {
       [' foo', isValid([MyTestEnum.FOO])],
       ['foo bar ', isValid([MyTestEnum.FOO, MyTestEnum.BAR])],
       ['bar', isValid([MyTestEnum.BAR])],
+      ['foo bar foo', isNotValid(getExpectedErrorMessage('foo bar foo', argName))],
       ['baz', isNotValid(getExpectedErrorMessage('baz', argName))],
       ['err', isNotValid(getExpectedErrorMessage('err', argName))],
       [' ', isNotValid(getExpectedErrorMessage(' ', argName))],

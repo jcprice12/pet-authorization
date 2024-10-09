@@ -3,7 +3,7 @@ import { ArgumentMetadata, BadRequestException, PipeTransform } from '@nestjs/co
 export interface ValidEnumOptions<E> {
   optional?: boolean;
   separator?: string;
-  customValidation?: (arr: Array<E>) => boolean;
+  additionalValidations?: Array<(arr: Array<E>) => boolean>;
 }
 
 export class ValidArrayOfEnumPipe<E> implements PipeTransform {
@@ -21,7 +21,10 @@ export class ValidArrayOfEnumPipe<E> implements PipeTransform {
       const arr = trimmed.split(this.options.separator ?? ' ');
       const valuesForEnum = Object.values(this.enumSpec);
       if (arr.every((val) => valuesForEnum.includes(val))) {
-        if (!this.options.customValidation || this.options.customValidation(arr as Array<E>)) {
+        if (
+          !this.options.additionalValidations ||
+          this.options.additionalValidations.every((additionalValidation) => additionalValidation(arr as Array<E>))
+        ) {
           return arr;
         }
       }

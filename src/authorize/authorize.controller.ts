@@ -15,6 +15,7 @@ import { Logger } from 'winston';
 import { ClientsService } from '../clients/clients.service';
 import { Scope } from '../server-metadata/scope.enum';
 import { PublicUser } from '../users/user.model';
+import { everyValueUnique } from '../util/every-value-unique.validation';
 import { LogAttributeValue } from '../util/log-attribute-value.enum';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
@@ -27,7 +28,7 @@ import { AuthorizationRequestExceptionFilter } from './authorization-request-exc
 import { AuthorizeService } from './authorize.service';
 import { CodeChallengeMethod } from './code-challenge-method.enum';
 import { LoginRequiredError } from './login-required.error';
-import { promptCombinationValidation } from './prompt-combination.validation';
+import { nonePromptMustBeAlone } from './none-prompt-must-be-alone.validation';
 import { Prompt } from './prompt.enum';
 import { RedirectObject } from './redirect-object.model';
 import { RedirectValidationInterceptor } from './redirect-validation.interceptor';
@@ -61,7 +62,7 @@ export class AuthorizeController {
       new ValidArrayOfEnumPipe(Prompt, {
         separator: ' ',
         optional: true,
-        customValidation: promptCombinationValidation
+        additionalValidations: [everyValueUnique, nonePromptMustBeAlone]
       })
     )
     prompts: Array<string> = [Prompt.NONE],
