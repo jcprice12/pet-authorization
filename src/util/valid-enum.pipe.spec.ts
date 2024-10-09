@@ -26,7 +26,7 @@ describe('Given an enum and pipe for enum', () => {
   describe('Given a pipe that allows value to be optional', () => {
     let pipe: ValidEnumPipe;
     beforeEach(() => {
-      pipe = new ValidEnumPipe(MyTestEnum, { isOptional: true });
+      pipe = new ValidEnumPipe(MyTestEnum, { optional: true });
     });
 
     describe('Given an argument decorated by pipe', () => {

@@ -21,6 +21,7 @@ import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { Span } from '../util/span.decorator';
 import { retreiveAppTracer } from '../util/span.retriever';
 import { FullURL } from '../util/url.decorator';
+import { ValidArrayOfEnumPipe } from '../util/valid-array-of-enum.pipe';
 import { ValidEnumPipe } from '../util/valid-enum.pipe';
 import { AuthorizationRequestExceptionFilter } from './authorization-request-exception.filter';
 import { AuthorizeService } from './authorize.service';
@@ -54,19 +55,20 @@ export class AuthorizeController {
     @FullURL() fullUrl: URL,
     @Query('client_id') clientId: string, // no pipe needed because interceptor checks for validity
     @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
+    @Query('prompt', new ValidArrayOfEnumPipe(Prompt, { separator: ' ', optional: true }))
+    prompts: Array<string> = [Prompt.NONE],
     @Query('redirect_uri') redirectUri?: string, // no pipe needed because interceptor checks for validity
     @Query('scope', new ParseArrayPipe({ separator: ' ', optional: true })) scopes?: Array<Scope>,
-    @Query('prompt', new ValidEnumPipe(Prompt, { isOptional: true })) prompt?: string,
     @Query('state') state?: string,
     @Query('code_challenge') codeChallenge?: string,
-    @Query('code_challenge_method', new ValidEnumPipe(CodeChallengeMethod, { isOptional: true }))
+    @Query('code_challenge_method', new ValidEnumPipe(CodeChallengeMethod, { optional: true }))
     codeChallengeMethod: CodeChallengeMethod = CodeChallengeMethod.PLAIN
   ): Promise<RedirectObject> {
     let redirectObject: RedirectObject;
-    if (prompt === Prompt.LOGIN) {
+    if (prompts.some((prompt) => prompt === Prompt.LOGIN)) {
       redirectObject = this.redirectService.goToLoginPage(fullUrl);
     } else if (req.isAuthenticated()) {
-      if (prompt === Prompt.CONSENT) {
+      if (prompts.some((prompt) => prompt === Prompt.CONSENT)) {
         redirectObject = this.redirectService.goToConsentPage(fullUrl);
       } else {
         const user = req.user as PublicUser;

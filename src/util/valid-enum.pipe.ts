@@ -1,7 +1,7 @@
 import { ArgumentMetadata, BadRequestException, PipeTransform } from '@nestjs/common';
 
 export interface ValidEnumOptions {
-  isOptional?: boolean;
+  optional?: boolean;
 }
 
 export class ValidEnumPipe implements PipeTransform {
@@ -11,7 +11,7 @@ export class ValidEnumPipe implements PipeTransform {
   ) {}
 
   transform(value: unknown, metadata: ArgumentMetadata): unknown {
-    if (this.options.isOptional && !value) {
+    if (this.options.optional && !value) {
       return value;
     }
     if (!Object.values(this.enumSpec).includes(value)) {
