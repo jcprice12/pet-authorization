@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  ParseArrayPipe,
-  Query,
-  Redirect,
-  Req,
-  UseFilters,
-  UseInterceptors
-} from '@nestjs/common';
+import { Controller, Get, Inject, Query, Redirect, Req, UseFilters, UseInterceptors } from '@nestjs/common';
 import { Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -55,8 +45,16 @@ export class AuthorizeController {
   async handleAuthorizeRequest(
     @Req() req: Request,
     @FullURL() fullUrl: URL,
-    @Query('client_id') clientId: string, // no pipe needed because interceptor checks for validity
     @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
+    @Query('client_id') clientId: string, // no pipe needed because interceptor checks for validity
+    @Query('redirect_uri') redirectUri?: string, // no pipe needed because interceptor checks for validity
+    @Query('state') state?: string,
+    @Query('code_challenge') codeChallenge?: string,
+    @Query(
+      'scope',
+      new ValidArrayOfEnumPipe(Scope, { separator: ' ', optional: true, additionalValidations: [everyValueUnique] })
+    )
+    scopes?: Array<Scope>,
     @Query(
       'prompt',
       new ValidArrayOfEnumPipe(Prompt, {
@@ -66,10 +64,6 @@ export class AuthorizeController {
       })
     )
     prompts: Array<string> = [Prompt.NONE],
-    @Query('redirect_uri') redirectUri?: string, // no pipe needed because interceptor checks for validity
-    @Query('scope', new ParseArrayPipe({ separator: ' ', optional: true })) scopes?: Array<Scope>,
-    @Query('state') state?: string,
-    @Query('code_challenge') codeChallenge?: string,
     @Query('code_challenge_method', new ValidEnumPipe(CodeChallengeMethod, { optional: true }))
     codeChallengeMethod: CodeChallengeMethod = CodeChallengeMethod.PLAIN
   ): Promise<RedirectObject> {

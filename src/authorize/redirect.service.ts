@@ -45,7 +45,7 @@ export class RedirectService {
     if (prompt) {
       urlWithPrompt.searchParams.set('prompt', prompt);
     } else {
-      urlWithPrompt.searchParams.delete('prompt');
+      urlWithPrompt.searchParams.set('prompt', Prompt.NONE);
     }
   }
 
