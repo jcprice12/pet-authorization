@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Inject,
-  ParseArrayPipe,
   Post,
   Query,
   Render,
@@ -19,9 +18,11 @@ import { AuthenticatedGuard } from '../authentication/authenticated.guard';
 import { LocalAuthGuard } from '../authentication/local-auth.guard';
 import { ScopeMetadataService } from '../server-metadata/scope-metadata.service';
 import { Scope } from '../server-metadata/scope.enum';
+import { everyValueUnique } from '../util/every-value-unique.validation';
 import { Log } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { RequiredPipe } from '../util/required.pipe';
+import { ValidArrayOfEnumPipe } from '../util/valid-array-of-enum.pipe';
 import { ConsentDto } from './consent.model';
 import { PublicUser, UserRegistrationDto } from './user.model';
 import { UsersDao } from './users.dao';
@@ -62,7 +63,8 @@ export class UsersController {
   @Get('consent')
   @Render('user-consent')
   getUserConsentPage(
-    @Query('scope', new ParseArrayPipe({ separator: ' ' })) scopes: Array<Scope>,
+    @Query('scope', new ValidArrayOfEnumPipe(Scope, { separator: ' ', additionalValidations: [everyValueUnique] }))
+    scopes: Array<Scope>,
     @Query('client_id', RequiredPipe) clientId: string,
     @Query('redirect_uri') redirectUri?: string
   ) {
