@@ -27,6 +27,7 @@ import { AuthorizationRequestExceptionFilter } from './authorization-request-exc
 import { AuthorizeService } from './authorize.service';
 import { CodeChallengeMethod } from './code-challenge-method.enum';
 import { LoginRequiredError } from './login-required.error';
+import { promptCombinationValidation } from './prompt-combination.validation';
 import { Prompt } from './prompt.enum';
 import { RedirectObject } from './redirect-object.model';
 import { RedirectValidationInterceptor } from './redirect-validation.interceptor';
@@ -55,7 +56,14 @@ export class AuthorizeController {
     @FullURL() fullUrl: URL,
     @Query('client_id') clientId: string, // no pipe needed because interceptor checks for validity
     @Query('response_type', new ValidEnumPipe(ResponseType)) _responseType: ResponseType,
-    @Query('prompt', new ValidArrayOfEnumPipe(Prompt, { separator: ' ', optional: true }))
+    @Query(
+      'prompt',
+      new ValidArrayOfEnumPipe(Prompt, {
+        separator: ' ',
+        optional: true,
+        customValidation: promptCombinationValidation
+      })
+    )
     prompts: Array<string> = [Prompt.NONE],
     @Query('redirect_uri') redirectUri?: string, // no pipe needed because interceptor checks for validity
     @Query('scope', new ParseArrayPipe({ separator: ' ', optional: true })) scopes?: Array<Scope>,

@@ -3,7 +3,8 @@ import { ValidArrayOfEnumPipe } from './valid-array-of-enum.pipe';
 
 enum MyTestEnum {
   FOO = 'foo',
-  BAR = 'bar'
+  BAR = 'bar',
+  BAZ = 'baz'
 }
 
 const isNotValid = (expectedMessage: string) => {
@@ -23,10 +24,13 @@ const getExpectedErrorMessage = (value: string, argName: string) => {
   return `provided value "${value}" is not accepted for argument "${argName}"`;
 };
 
-describe('Given a pipe that allows value to be optional', () => {
+describe('Given a pipe', () => {
   let pipe: ValidArrayOfEnumPipe<MyTestEnum>;
+  const customValidation = (arr: Array<MyTestEnum>): boolean => {
+    return !arr.some((val) => val == MyTestEnum.BAZ);
+  };
   beforeEach(() => {
-    pipe = new ValidArrayOfEnumPipe(MyTestEnum, { optional: true });
+    pipe = new ValidArrayOfEnumPipe(MyTestEnum, { optional: true, customValidation });
   });
 
   describe('Given an argument decorated by pipe', () => {
@@ -43,6 +47,7 @@ describe('Given a pipe that allows value to be optional', () => {
       ['foo bar', isValid([MyTestEnum.FOO, MyTestEnum.BAR])],
       ['bar', isValid([MyTestEnum.BAR])],
       ['baz', isNotValid(getExpectedErrorMessage('baz', argName))],
+      ['err', isNotValid(getExpectedErrorMessage('err', argName))],
       ['', isValid('')],
       [undefined, isValid(undefined)]
     ])('Given value %s', (value, expectation) => {

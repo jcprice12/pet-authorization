@@ -3,6 +3,7 @@ import { ArgumentMetadata, BadRequestException, PipeTransform } from '@nestjs/co
 export interface ValidEnumOptions<E> {
   optional?: boolean;
   separator?: string;
+  customValidation?: (arr: Array<E>) => boolean;
 }
 
 export class ValidArrayOfEnumPipe<E> implements PipeTransform {
@@ -18,7 +19,9 @@ export class ValidArrayOfEnumPipe<E> implements PipeTransform {
     if (value && typeof value === 'string') {
       const arr = value.split(this.options.separator ?? ' ');
       if (arr.every((val) => Object.values(this.enumSpec).includes(val))) {
-        return arr;
+        if (!this.options.customValidation || this.options.customValidation(arr as Array<E>)) {
+          return arr;
+        }
       }
     }
     throw new BadRequestException(`provided value "${value}" is not accepted for argument "${metadata.data}"`);
