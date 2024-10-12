@@ -3,10 +3,14 @@ import { ScopeMetadataService } from '../server-metadata/scope-metadata.service'
 import { ErrorCode } from './error-code.enum';
 import { Prompt } from './prompt.enum';
 import { RedirectObject } from './redirect-object.model';
+import { ServerMetadataService } from '../server-metadata/server-metadata.service';
 
 @Injectable()
 export class RedirectService {
-  constructor(private readonly scopeMetadataService: ScopeMetadataService) {}
+  constructor(
+    private readonly scopeMetadataService: ScopeMetadataService,
+    private readonly serverMetadataService: ServerMetadataService
+  ) {}
 
   goToCbUrlWithError(url: URL, errorCode: ErrorCode, state?: string): RedirectObject {
     return this.goToCbUrlWithParams(url, [
@@ -24,7 +28,9 @@ export class RedirectService {
 
   goToLoginPage(uriToGoToAfterLogin: URL): RedirectObject {
     this.removePrompt(Prompt.LOGIN, uriToGoToAfterLogin);
-    return this.goToUrl(`/users/login?redirect_uri=${encodeURIComponent(uriToGoToAfterLogin.toString())}`);
+    return this.goToUrl(
+      `${this.serverMetadataService.getHost()}/users/login?redirect_uri=${encodeURIComponent(uriToGoToAfterLogin.toString())}`
+    );
   }
 
   goToConsentPage(uriToGoToAfterConsent: URL): RedirectObject {
@@ -33,7 +39,7 @@ export class RedirectService {
       uriToGoToAfterConsent.searchParams.get('scope') ?? this.scopeMetadataService.getAllSupportedScopesAsStr();
     this.removePrompt(Prompt.CONSENT, uriToGoToAfterConsent);
     return this.goToUrl(
-      `/users/consent?scope=${encodeURIComponent(desiredScope)}&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+      `${this.serverMetadataService.getHost()}/users/consent?scope=${encodeURIComponent(desiredScope)}&client_id=${clientId}&redirect_uri=${encodeURIComponent(
         uriToGoToAfterConsent.toString()
       )}`
     );
