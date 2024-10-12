@@ -49,7 +49,6 @@ export class AuthorizeController {
     @Query('client_id') clientId: string, // no pipe needed because interceptor checks for validity
     @Query('redirect_uri') redirectUri?: string, // no pipe needed because interceptor checks for validity
     @Query('state') state?: string,
-    @Query('code_challenge') codeChallenge?: string,
     @Query(
       'scope',
       new ValidArrayOfEnumPipe(Scope, { separator: ' ', optional: true, additionalValidations: [everyValueUnique] })
@@ -64,6 +63,7 @@ export class AuthorizeController {
       })
     )
     prompts: Array<string> = [Prompt.NONE],
+    @Query('code_challenge') codeChallenge?: string,
     @Query('code_challenge_method', new ValidEnumPipe(CodeChallengeMethod, { optional: true }))
     codeChallengeMethod: CodeChallengeMethod = CodeChallengeMethod.PLAIN
   ): Promise<RedirectObject> {

@@ -23,7 +23,7 @@ export class AuthorizationRequestExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     if (error instanceof InvalidClientIdError || error instanceof InvalidRedirectUriError) {
-      response.send({ status: HttpStatus.BAD_REQUEST, message: error.message }).status(HttpStatus.BAD_REQUEST); // OAuth spec does not specify what the response should be, only that it shouldn't redirect
+      response.status(HttpStatus.BAD_REQUEST).send({ status: HttpStatus.BAD_REQUEST, message: error.message }); // OAuth spec does not specify what the response should be, only that it shouldn't redirect
     } else {
       const request = ctx.getRequest<Request>();
       const state = request.query.state as string | undefined;
