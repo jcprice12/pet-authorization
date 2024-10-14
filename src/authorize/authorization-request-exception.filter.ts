@@ -35,7 +35,7 @@ export class AuthorizationRequestExceptionFilter implements ExceptionFilter {
       } else if (error instanceof LoginRequiredError) {
         response.redirect(this.redirectService.goToCbUrlWithError(new URL(cb), ErrorCode.LOGIN_REQUIRED, state).url);
       } else if (error instanceof ConsentRequiredError) {
-        response.redirect(this.redirectService.goToCbUrlWithError(new URL(cb), ErrorCode.ACCESS_DENIED, state).url);
+        response.redirect(this.redirectService.goToCbUrlWithError(new URL(cb), ErrorCode.CONSENT_REQUIRED, state).url);
       } else {
         response.redirect(this.redirectService.goToCbUrlWithError(new URL(cb), ErrorCode.SERVER_ERROR, state).url);
       }

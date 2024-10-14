@@ -21,6 +21,8 @@ defineFeature(feature, (test) => {
   let app: INestApplication;
 
   beforeEach(async () => {
+    process.env.NODE_ENV = 'local';
+    process.env.PORT = '3000';
     app = await createApp();
     await app.init();
     const world = World.getInstance();
@@ -119,7 +121,7 @@ defineFeature(feature, (test) => {
               url = new URL(location);
               redirectLocationNotGood = () => url.origin + url.pathname !== redirect_to;
             } catch (e) {
-              url = new URL(location, 'http://localhost'); //dummy valid url - only used to get query params easily
+              url = new URL(location);
               redirectLocationNotGood = () => url.pathname !== redirect_to;
             }
             if (redirectLocationNotGood()) {

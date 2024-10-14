@@ -14,7 +14,7 @@ Feature: Authorize
     When client makes a request to the authorize endpoint with the following parameters:
       | response_type | client_id | redirect_uri                    | scope  | prompt |
       | code          | 123       | https://foo.bar.com/hello-world | openid | login  |
-    Then a redirect is made to "/users/login" with the following params:
+    Then a redirect is made to "http://localhost:3000/users/login" with the following params:
       | name         | value                                                                                                                           |
       | redirect_uri | .+\/authorize\?response_type=code&client_id=123&redirect_uri=https%3A%2F%2Ffoo\.bar\.com%2Fhello-world&scope=openid&prompt=none |
 
@@ -26,8 +26,8 @@ Feature: Authorize
       | response_type | client_id | redirect_uri                    | scope  | prompt |
       | code          | 123       | https://foo.bar.com/hello-world | openid | none   |
     Then a redirect is made to "https://foo.bar.com/hello-world" with the following params:
-      | name  | value         |
-      | error | access_denied |
+      | name  | value            |
+      | error | consent_required |
 
   Scenario: Authenticated request with consent prompt leads to redirect to consent page
     Given client with ID "123" and redirect URI "https://foo.bar.com/hello-world"
@@ -36,7 +36,7 @@ Feature: Authorize
     When client makes a request to the authorize endpoint with the following parameters for resource owner "john@gmail.com":
       | response_type | client_id | redirect_uri                    | scope        | prompt  |
       | code          | 123       | https://foo.bar.com/hello-world | openid email | consent |
-    Then a redirect is made to "/users/consent" with the following params:
+    Then a redirect is made to "http://localhost:3000/users/consent" with the following params:
       | name         | value                                                                                                                                  |
       | scope        | openid email                                                                                                                           |
       | client_id    | 123                                                                                                                                    |

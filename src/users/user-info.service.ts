@@ -8,7 +8,8 @@ export class UserInfoService {
     const userInfo: UserInfo = {
       given_name: user.given_name,
       family_name: user.family_name,
-      sub: user.id
+      sub: user.id,
+      consented_scopes: user.scopes
     };
     if (user.scopes.includes(Scope.EMAIL)) {
       userInfo.email = user.email;

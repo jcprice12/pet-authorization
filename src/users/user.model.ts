@@ -38,6 +38,7 @@ export interface UserInfo {
   sub: string;
   given_name: string;
   family_name: string;
+  consented_scopes: Array<Scope>;
   email?: string;
   [Scope.JCPETS_ROLES]?: Array<Role>;
 }
