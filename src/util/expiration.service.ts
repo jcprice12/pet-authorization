@@ -8,7 +8,7 @@ export class ExpirationService {
   }
 
   createExpirationDateFromNowAsSecondsSinceEpoch(duration: DurationLike): number {
-    return this.createExpirationDateFromNow(duration).toSeconds();
+    return Math.floor(this.createExpirationDateFromNow(duration).toSeconds());
   }
 
   createExpirationDateFromNowAsIsoString(duration: DurationLike): string {

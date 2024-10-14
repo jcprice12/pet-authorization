@@ -59,7 +59,7 @@ export class TokenService {
   private async createTokensForAuthCode(authCode: AuthCode): Promise<TokenResource> {
     const keyPair = await this.keyPairService.getKeyPair();
     const createBase = (payload: JWTPayload): SignJWT => {
-      const nowInSeconds = Date.now() / 1000;
+      const nowInSeconds = Math.floor(Date.now() / 1000);
       const metadata = this.serverMetadataService.getServerMetadata();
       return new SignJWT(payload)
         .setProtectedHeader({ alg: keyPair.alg, kid: keyPair.kid, jku: metadata.jwks_uri })
