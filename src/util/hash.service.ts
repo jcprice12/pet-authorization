@@ -4,8 +4,6 @@ import { createHash } from 'crypto';
 
 @Injectable()
 export class HashService {
-  private readonly sha256Hash = createHash('sha256');
-
   hashWithSalt(value: string, saltRounds = 10): Promise<string> {
     return bcrypt.hash(value, saltRounds);
   }
@@ -15,6 +13,7 @@ export class HashService {
   }
 
   sha256(value: string): string {
-    return this.sha256Hash.update(value).digest('base64url');
+    const sha256Hash = createHash('sha256');
+    return sha256Hash.update(value).digest('base64url');
   }
 }
