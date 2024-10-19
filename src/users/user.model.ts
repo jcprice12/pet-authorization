@@ -36,9 +36,8 @@ export interface UserRegistrationDto extends UserBase {
  */
 export interface UserInfo {
   sub: string;
-  given_name: string;
-  family_name: string;
-  consented_scopes: Array<Scope>;
+  given_name?: string;
+  family_name?: string;
   email?: string;
   [Scope.JCPETS_ROLES]?: Array<Role>;
 }

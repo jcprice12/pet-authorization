@@ -6,11 +6,12 @@ import { UserInfo, UserWithScopes } from './user.model';
 export class UserInfoService {
   mapUserWithScopesToUserInfo(user: UserWithScopes): UserInfo {
     const userInfo: UserInfo = {
-      given_name: user.given_name,
-      family_name: user.family_name,
-      sub: user.id,
-      consented_scopes: user.scopes
+      sub: user.id
     };
+    if (user.scopes.includes(Scope.PROFILE)) {
+      userInfo.given_name = user.given_name;
+      userInfo.family_name = user.family_name;
+    }
     if (user.scopes.includes(Scope.EMAIL)) {
       userInfo.email = user.email;
     }
