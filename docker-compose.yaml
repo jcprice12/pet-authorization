@@ -40,5 +40,8 @@ services:
         - action: sync
           path: ./src
           target: /app/src
+        - action: sync
+          path: ./views
+          target: /app/views
         - action: rebuild
           path: package.json

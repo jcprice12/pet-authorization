@@ -15,7 +15,7 @@
       <input type='hidden' id='client_id' value='{{clientId}}'/>
       <input type='hidden' id='after_consent_goto' value='{{afterConsentGoTo}}'/>
       {{#each desiredScopesMetadata}}
-        <input type="checkbox" class="desired_scope" id="{{this.name}}" name="{{this.name}}" value="{{this.name}}">
+        <input type="checkbox" class="desired_scope" id="{{this.name}}" name="{{this.name}}" value="{{this.name}}" {{#if this.consented}}checked{{/if}}>
         <label for="{{this.name}}">{{this.description}}</label><br>
       {{/each}}
       <input type='button' value='Consent' onclick='consent()'/>

@@ -62,15 +62,23 @@ export class UsersController {
   @UseGuards(AuthenticatedGuard)
   @Get('consent')
   @Render('user-consent')
-  getUserConsentPage(
+  async getUserConsentPage(
+    @Req() req: Request,
     @Query('scope', new ValidArrayOfEnumPipe(Scope, { separator: ' ', additionalValidations: [everyValueUnique] }))
     scopes: Array<Scope>,
     @Query('client_id', RequiredPipe) clientId: string,
     @Query('redirect_uri') redirectUri?: string
   ) {
+    const user = req.user as PublicUser;
+    const clientInfoForUser = await this.usersDao.findClientInfoForUser(user.id, clientId);
+    const scopeMetadata = this.scopeMetadataService.getScopeMetadataFor(scopes);
+    const desiredScopesMetadata = scopeMetadata.map((meta) => ({
+      ...meta,
+      consented: clientInfoForUser.scopes.includes(meta.name)
+    }));
     return {
       afterConsentGoTo: redirectUri,
-      desiredScopesMetadata: this.scopeMetadataService.getScopeMetadataFor(scopes),
+      desiredScopesMetadata,
       clientId
     };
   }
