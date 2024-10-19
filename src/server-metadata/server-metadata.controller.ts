@@ -9,14 +9,13 @@ import { retreiveAppTracer } from '../util/span.retriever';
 import { ServerMetadata } from './server-metadata.model';
 import { ServerMetadataService } from './server-metadata.service';
 
-@Controller('/server-metadata')
+@Controller('/.well-known/openid-configuration')
 export class ServerMetadataController {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     private readonly serverMetadataService: ServerMetadataService
   ) {}
 
-  // inspired by https://developer.okta.com/docs/api/openapi/okta-oauth/oauth/tag/OrgAS/#tag/OrgAS/operation/getWellKnownOpenIDConfiguration
   @Get()
   @Span(retreiveAppTracer)
   @LogPromise(retrieveLoggerOnClass, {
