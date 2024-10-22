@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'winston';
@@ -7,7 +7,7 @@ import { HashService } from '../util/hash.service';
 import { LogPromise } from '../util/log.decorator';
 import { retrieveLoggerOnClass } from '../util/logger.retriever';
 import { MaskedUserLogAttribute } from './masked-user.log-attribute';
-import { PublicUser, User, UserRegistrationDto } from './user.model';
+import { PublicUser, User, UserRegistrationDto, UserWithScopes } from './user.model';
 import { UsersDao } from './users.dao';
 
 @Injectable()
@@ -39,20 +39,34 @@ export class UsersService {
   }
 
   @LogPromise(retrieveLoggerOnClass)
+  async getConsentedScopesUserAndClient(userId: string, clientId: string): Promise<UserWithScopes> {
+    const [clientInfoForUser, user] = await Promise.all([
+      this.usersDao.findClientInfoForUser(userId, clientId).catch((e) => {
+        if (e instanceof NotFoundException) {
+          return {
+            userId,
+            clientId,
+            scopes: []
+          };
+        }
+        throw e;
+      }),
+      this.usersDao.findUserById(userId)
+    ]);
+    return {
+      ...clientInfoForUser,
+      ...this.mapUserToPublicUser(user)
+    };
+  }
+
+  @LogPromise(retrieveLoggerOnClass)
   async getAuthorizedScopesUserAndClient(userId: string, clientId: string, scopes: Array<Scope>) {
-    try {
-      const [clientInfoForUser, user] = await Promise.all([
-        this.usersDao.findClientInfoForUser(userId, clientId),
-        this.usersDao.findUserById(userId)
-      ]);
-      return scopes.filter(
-        (scope) =>
-          clientInfoForUser.scopes.includes(scope) &&
-          (!ScopeRoles[scope].length || ScopeRoles[scope].some((role) => user.roles.includes(role)))
-      );
-    } catch (e) {
-      return [];
-    }
+    const userWithScopes = await this.getConsentedScopesUserAndClient(userId, clientId);
+    return scopes.filter(
+      (scope) =>
+        userWithScopes.scopes.includes(scope) &&
+        (!ScopeRoles[scope].length || ScopeRoles[scope].some((role) => userWithScopes.roles.includes(role)))
+    );
   }
 
   public mapUserToPublicUser(user: User): PublicUser {

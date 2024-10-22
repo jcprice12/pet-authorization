@@ -70,11 +70,11 @@ export class UsersController {
     @Query('redirect_uri') redirectUri?: string
   ) {
     const user = req.user as PublicUser;
-    const clientInfoForUser = await this.usersDao.findClientInfoForUser(user.id, clientId);
+    const userWithScopes = await this.usersService.getConsentedScopesUserAndClient(user.id, clientId);
     const scopeMetadata = this.scopeMetadataService.getScopeMetadataFor(scopes);
     const desiredScopesMetadata = scopeMetadata.map((meta) => ({
       ...meta,
-      consented: clientInfoForUser.scopes.includes(meta.name)
+      consented: userWithScopes.scopes.includes(meta.name)
     }));
     return {
       afterConsentGoTo: redirectUri,

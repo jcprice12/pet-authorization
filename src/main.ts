@@ -13,7 +13,18 @@ import { DynamoSessionStore } from './authentication/dynamo-session.store';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const sessionStore = app.get(DynamoSessionStore);
-  app.use(cors({ credentials: true, origin: 'http://localhost:4200' }));
+  app.use(
+    cors({
+      credentials: true,
+      origin: (origin, cb) => {
+        if (!origin || ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:4200'].includes(origin)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Not allowed by CORS'));
+        }
+      }
+    })
+  );
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');
   app.use(cookieParser());
