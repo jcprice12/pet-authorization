@@ -16,13 +16,13 @@ For local development, I use Docker Desktop. After installing it, simply run it 
 
 #### Running the app with Docker Compose
 
-While in the app directory, run `docker compose up --watch`. It should set up your complete development environment. Note, the `aws-cli` service will fail on subsequent runs because the `PetAuth` table will have already been created. That's fine. It doesn't prevent the rest of the services from running.
+While in the app directory, run `docker compose up --watch` (see https://docs.docker.com/reference/cli/docker/compose/up/#options for more). It should set up your complete development environment.
 
 Run `docker compose down` when you're finished to cleanup your containers
 
 ### Local Development without Docker
 
-If you're crazy, feel free to set up each of the components of the app on your own
+If you do not wish to use Docker, the instructions below can help you set up the app without it
 
 #### Prerequisites
 
@@ -64,6 +64,8 @@ I have placed some example DynamoDB commands in the `dynamo-commands` folder. Us
 | AWS_ACCESS_KEY_ID        | DUMMYIDEXAMPLE        |
 | AWS_SECRET_ACCESS_KEY    | DUMMYEXAMPLEKEY       |
 | AWS_REGION               | us-east-1             |
+
+Note, the AWS_* environment variables are not used in the app. They exist purely to run dynamo db local
 
 #### Running the app locally.
 
